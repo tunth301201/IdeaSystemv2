@@ -44,7 +44,7 @@ export default function Home() {
 
 return (
     <NavbarSidebarLayout>
-      <div className="px-4 pt-2">
+      <div className="px-4 pt-2 sm:ml-64">
           {/* Top idea*/}
           <div className="grid w-full gap-4 xl:grid-cols-2 2xl:grid-cols-3">
          

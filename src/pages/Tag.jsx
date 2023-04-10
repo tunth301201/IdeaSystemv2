@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { AiFillDislike, AiFillLike, AiOutlineDislike, AiOutlineLike, AiOutlineFileAdd } from 'react-icons/ai';
+import React from 'react';
 import {
-    HiHashtag,
-    HiPlusCircle
+  HiHashtag,
+  HiPlusCircle
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../layout/NavBar-SideBar";
 
@@ -10,7 +9,7 @@ export default function Tag() {
 
 return (
     <NavbarSidebarLayout>
-       <div className="px-4 pt-2">
+       <div className="px-4 pt-2 sm:ml-64">
        <div className="grid w-full grid-cols-1 ">
             <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm sm:p-6 dark:border-gray-700 dark:bg-gray-800 xl:mb-0">
               
