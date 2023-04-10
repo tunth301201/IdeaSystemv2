@@ -3,7 +3,7 @@ import NavbarSidebarLayout from "../layout/NavBar-SideBar";
 export default function Dashboard() {
 return (
     <NavbarSidebarLayout>
-      <div className="px-4 pt-2">
+      <div className="px-4 pt-2 sm:ml-64">
           {/* Chart and Top comment */}
           <div className="grid w-full gap-4 xl:grid-cols-2 2xl:grid-cols-3">
             {/* Chart */}
