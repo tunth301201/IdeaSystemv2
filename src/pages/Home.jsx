@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   HiHashtag
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../layout/NavBar-SideBar";
+import { getIdeas } from "../api/apiService";
 
 export default function Home() {
   // define a state to keep track of the active tab
@@ -41,6 +42,19 @@ export default function Home() {
     });
   }
 
+
+  
+  
+  // getIdeas from backend
+  const [ideas, setIdeas] = useState([]);
+
+  useEffect(() => {
+    getIdeas().then(res => {
+      setIdeas(res.data);
+    });
+  }, []);
+  
+  console.log('ideas: '+ideas)
 
 return (
     <NavbarSidebarLayout>

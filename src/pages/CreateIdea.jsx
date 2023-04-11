@@ -1,21 +1,26 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   HiGlobe,
   HiKey,
   HiTag
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../layout/NavBar-SideBar";
+import { createIdea } from '../api/apiService';
 
 export default function CreateIdea() {
-    const [files, setFiles] = useState([]);
+
+  const titleRef = useRef();
+  const contentRef = useRef();
+
+  
+
+
+
+  const [files, setFiles] = useState([]);
 
   function handleFileUpload(e) {
     const file = e.target.files[0];
-    setFiles([...files, {
-      name: file.name,
-      type: file.type,
-      size: file.size
-    }]);
+    setFiles([...files, file]);
   }
 
   const [isGlobal, setIsGlobal] = useState(true);
@@ -23,6 +28,29 @@ export default function CreateIdea() {
   const handleClick = () => {
     setIsGlobal(!isGlobal);
   };
+
+
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const tagId = "6434273affc2ab55bb6b0124";
+    const userId = "6434498530599ca53bf4b210";
+    const title = titleRef.current.value;
+    const content = contentRef.current.value;
+    
+    const formData = new FormData();
+    formData.append('tag_id', tagId);
+    formData.append('user_id', userId);
+    formData.append('title', title);
+    formData.append('content', content);
+
+    // Append each file to formData
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+
+    createIdea(formData);
+  }
   
 
 return (
@@ -31,8 +59,10 @@ return (
         <div className="px-4 pt-2 ">
             <div className="grid w-full grid-cols-1 ">
               <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm sm:p-6 dark:border-gray-700 dark:bg-gray-800 xl:mb-0">
-                {/* Chat */}
-                <form className="overflow-y-auto lg:max-h-[60rem] 2xl:max-h-fit text-left">
+                
+
+                {/* Form create idea */}
+                <form onSubmit={handleSubmit} className="overflow-y-auto lg:max-h-[60rem] 2xl:max-h-fit text-left">
                   <article className="mb-5">
 
                     <div className="flex items-center justify-between mb-2">
@@ -48,7 +78,7 @@ return (
                         </p>
 
 
-                          {/* De global icon o day */}
+                          {/* Public mode or anyos */}
                       
                           <button id="globalButton"  onClick={handleClick} class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-gray-600" type="button">
                               {isGlobal ? <HiGlobe size="1.3rem" /> : <HiKey size="1.3rem" />}
@@ -72,7 +102,7 @@ return (
                       id="chat"
                       rows={1}
                       className="block mr-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                      
+                      ref={titleRef}
                       data-gramm="false"
                       wt-ignore-input="true"
                       defaultValue={""}
@@ -86,7 +116,7 @@ return (
                       id="chat"
                       rows={10}
                       className="block mr-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-
+                      ref={contentRef}
                       data-gramm="false"
                       wt-ignore-input="true"
                       defaultValue={""}
@@ -105,7 +135,7 @@ return (
 
                   
                     <div className="items-center space-x-4 flex">
-                      {/* Hien thi mang file upload len */}
+                      {/* Display upload file in the interface */}
                       {/* Item */}
 
                       {files.map((file, index) => (
@@ -152,7 +182,7 @@ return (
                       ))}
                     </div>
 
-
+                      {/* Check box terms and conditions */}
                     <div class="flex items-center mt-5">
                       <input type="checkbox" className="form-checkbox h-5 w-5 bg-primary-800" checked />
                       
@@ -174,6 +204,7 @@ return (
                     <div class="h-0 flex justify-center items-center border border-gray-300 rounded-lg mb-8 mt-5"></div>
 
 
+                    {/* Button Post */}
                   <div className='flex items-center justify-center mt-5'>
                       <button type="submit" className="inline-flex items-center py-2.5 px-10 text-xs font-medium text-center text-white bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800">
                           <span className="text-base leading-normal">Post</span>
