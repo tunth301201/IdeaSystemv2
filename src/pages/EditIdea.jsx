@@ -5,41 +5,48 @@ import {
   HiTag
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../layout/NavBar-SideBar";
-import { createIdea } from '../api/apiService';
+import { editIdea, getOneIdea } from '../api/apiService';
 import { useParams } from "react-router-dom";
-import { getOneTag } from '../api/apiService';
 
 
 
-export default function CreateIdea() {
+export default function EditIdea() {
 
   const { id } = useParams();
-  console.log("tag id: "+id)
 
-  const [tag, setTag] = useState(null);
-    
+  const [idea, setIdea] = useState(null);
 
-   useEffect(() => {
-    getOneTag(id)
-      .then(res => {
-        console.log("Tag SUBJECT: "+res.data.subject);
-        setTag(res.data);
+  useEffect(() => {
+    const fetchIdea = async () => {
+      try {
+        getOneIdea(id)
+        .then(res => {
+          setIdea(res.data);
+        })
+        .catch(error => {
+          console.error("Error getting idea:", error);
+        });
+      } catch (error) {
+        // Handle error if needed
+      }
+    };
 
-      })
-      .catch(error => {
-        console.error("Error getting tag:", error);
-      });
+    fetchIdea();
   }, []);
 
+
+  const [oldFiles, setOldFiles] = useState([]);
+  
+  useEffect(() => {
+    if (idea) {
+      setOldFiles(idea.files);
+    }
+  }, [idea]); 
 
 
 
   const titleRef = useRef();
   const contentRef = useRef();
-
-  
-
-
 
   const [files, setFiles] = useState([]);
 
@@ -48,34 +55,59 @@ export default function CreateIdea() {
     setFiles([...files, file]);
   }
 
+  var updatedTitle, updatedContent;
+
+  const handleTitleChange = (event) => {
+    updatedTitle = event.target.value;
+  };
+  const handleContentChange = (event) => {
+    updatedContent = event.target.value;
+  };
+
+  const [isGlobal, setIsGlobal] = useState(true);
+  
+  useEffect(() => {
+    if (idea) {
+      setIsGlobal(idea.isAnonymity ? false : true);
+    }
+  }, [idea]); 
+
+  const handleClick = () => {
+    setIsGlobal(!isGlobal);
+  };
+
+  
+  const handelDeleteOldFileClick = (id) => {
+    const updatedFiles = oldFiles.filter(file => file._id !== id);
+    setOldFiles(updatedFiles);
+  };
+
+
   const handleDeleteNewFileClick = (index) => {
     const newFiles = [...files];
     newFiles.splice(index, 1);
     setFiles(newFiles);
   };
 
-  const [isGlobal, setIsGlobal] = useState(true);
-
-  const handleClick = () => {
-    setIsGlobal(!isGlobal);
-  };
+  
 
 
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const tagId = id;
+    const tagId = idea.tag_id;
     const userId = "6436847c931cfa456a37aafb"; // lay tu token
-    const title = titleRef.current.value;
-    const content = contentRef.current.value;
+    const title = updatedTitle ? updatedTitle : titleRef.current.value;
+    const content = updatedContent ? updatedContent : contentRef.current.value;
     let isAnonymity = isGlobal ? false : true;
+    const restFileIds = oldFiles.map (o => o._id);
+    console.log("restFileIds: "+ restFileIds)
     
     const formData = new FormData();
-    formData.append('tag_id', tagId);
-    formData.append('user_id', userId);
     formData.append('title', title);
     formData.append('content', content);
     formData.append('isAnonymity', isAnonymity);
+    formData.append('restFileIds', restFileIds);
 
     // Append each file to formData
     files.forEach((file) => {
@@ -83,9 +115,9 @@ export default function CreateIdea() {
     });
 
     try {
-      await createIdea(formData);
+      await editIdea(id, formData);
       // toast.success('Idea created successfully');
-      window.location.href = `/Profile/${userId}`; 
+      window.location.href = `/viewIdea/${id}`; 
     }
     catch (error) {
       throw new Error(error);
@@ -103,7 +135,7 @@ return (
                 
 
                 {/* Form create idea */}
-               {tag ?
+               {idea ?
                 <form onSubmit={handleSubmit} className="overflow-y-auto lg:max-h-[60rem] 2xl:max-h-fit text-left">
                   <article className="mb-5">
 
@@ -133,7 +165,7 @@ return (
 
                     {/* Subject tag/ tag name */}
                     <div className="flex items-center justify-start flex-1 text-md text-green-500 font-semibold dark:text-green-500 mb-6">
-                      <HiTag size='1.3rem'/> {tag.subject}
+                      <HiTag size='1.3rem'/> {idea.tag_name}
                     </div>
 
                     {/* Title of idea */}
@@ -147,7 +179,8 @@ return (
                       ref={titleRef}
                       data-gramm="false"
                       wt-ignore-input="true"
-                      defaultValue={""}
+                      defaultValue={idea.title}
+                      onChange={handleTitleChange} 
                       />
 
                       {/* Content of idea */}
@@ -161,7 +194,8 @@ return (
                       ref={contentRef}
                       data-gramm="false"
                       wt-ignore-input="true"
-                      defaultValue={""}
+                      defaultValue={idea.content}
+                      onChange={handleContentChange} 
                       />
 
 
@@ -180,7 +214,7 @@ return (
                       {/* Display upload file in the interface */}
                       {/* Item */}
 
-                      {files.map((file, index) => (
+                      {oldFiles.map((file, index) => (
 
                       <div className="flex items-center p-3 mb-3.5 border border-gray-200 dark:border-gray-700 rounded-lg">
                         <div className="flex items-center justify-center w-10 h-10 mr-3 rounded-lg bg-primary-100 dark:bg-primary-900">
@@ -199,8 +233,8 @@ return (
                           </svg>
                         </div>
                         <div className="mr-4">
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{file.name}</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{file.type.split('/')[1]}, {file.size} MB</p>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{file.filename}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{file.contentType.split('/')[1]}, {(file.length / (1024 * 1024)).toFixed(2)} MB</p>
                         </div>
                         <div className="flex items-center ml-auto">
                           <button type="button" className="p-2 rounded hover:bg-gray-100">
@@ -219,8 +253,9 @@ return (
                             <span className="sr-only">Download</span>
                           </button>
                         </div>
+
                         <button
-                        onClick={handleDeleteNewFileClick.bind(null, index)}
+                        onClick={handelDeleteOldFileClick.bind(null, file._id)}
                         className="relative top-0 right-0 transform translate-x-1/2 -translate-y-5 bg-red-400 text-white rounded-full w-5 h-5 flex items-center justify-center"
                         >
                             X
@@ -228,6 +263,56 @@ return (
                       </div>
                       
                       ))}
+
+                        {files.map((file, index) => (
+
+                        <div className="flex items-center p-3 mb-3.5 border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <div className="flex items-center justify-center w-10 h-10 mr-3 rounded-lg bg-primary-100 dark:bg-primary-900">
+                            <svg
+                            className="w-5 h-5 text-primary-600 lg:w-6 lg:h-6 dark:text-primary-300"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true">
+                            <path
+                                clipRule="evenodd"
+                                fillRule="evenodd"
+                                d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0016.5 9h-1.875a1.875 1.875 0 01-1.875-1.875V5.25A3.75 3.75 0 009 1.5H5.625zM7.5 15a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5A.75.75 0 017.5 15zm.75 2.25a.75.75 0 000 1.5H12a.75.75 0 000-1.5H8.25z"
+                            />
+                            <path d="M12.971 1.816A5.23 5.23 0 0114.25 5.25v1.875c0 .207.168.375.375.375H16.5a5.23 5.23 0 013.434 1.279 9.768 9.768 0 00-6.963-6.963z" />
+                            </svg>
+                        </div>
+                        <div className="mr-4">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white">{file.name}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{file.type.split('/')[1]}, {file.size} MB</p>
+                        </div>
+                        <div className="flex items-center ml-auto">
+                            <button type="button" className="p-2 rounded hover:bg-gray-100">
+                            <svg
+                                className="w-5 h-5 text-gray-500 dark:text-gray-400"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                                aria-hidden="true">
+                                <path
+                                clipRule="evenodd"
+                                fillRule="evenodd"
+                                d="M12 2.25a.75.75 0 01.75.75v11.69l3.22-3.22a.75.75 0 111.06 1.06l-4.5 4.5a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 111.06-1.06l3.22 3.22V3a.75.75 0 01.75-.75zm-9 13.5a.75.75 0 01.75.75v2.25a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5V16.5a.75.75 0 011.5 0v2.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V16.5a.75.75 0 01.75-.75z"
+                                />
+                            </svg>
+                            <span className="sr-only">Download</span>
+                            </button>
+                        </div>
+                        <button
+                            onClick={handleDeleteNewFileClick.bind(null, index)}
+                            className="relative top-0 right-0 transform translate-x-1/2 -translate-y-5 bg-red-400 text-white rounded-full w-5 h-5 flex items-center justify-center"
+                            >
+                                X
+                            </button>
+                        </div>
+
+                        ))}
+
                     </div>
 
                       {/* Check box terms and conditions */}

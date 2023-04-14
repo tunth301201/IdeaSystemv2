@@ -11,6 +11,7 @@ import Profile from "./pages/Profile.jsx";
 import Tag from "./pages/Tag.jsx";
 import ViewIdea from "./pages/ViewIdea.jsx";
 import Login from "./pages/Login.jsx";
+import EditIdea from "./pages/EditIdea.jsx";
 
 export default function App() {
   return (
@@ -20,9 +21,11 @@ export default function App() {
        
             <Route path="/home" element={<Home />}/>
             <Route path="/tag" element={<Tag />}/>
-            <Route path="/viewidea" element={<ViewIdea />}/>
-            <Route path="/createidea" element={<CreateIdea />}/>
-            <Route path="/profile" element={<Profile />}/>
+            <Route path="/viewIdea/:id" element={<ViewIdea/>} />
+            <Route path="/createIdea/:id" element={<CreateIdea />}/>
+            <Route path="/editIdea/:id" element={<EditIdea />}/>
+            
+            <Route path="/profile/:id" element={<Profile />}/>
             <Route path="/" element={<Login />}/>
 
             <Route path="/privacy" element={<Privacy />}/>

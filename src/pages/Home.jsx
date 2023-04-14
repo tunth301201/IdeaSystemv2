@@ -3,7 +3,8 @@ import {
   HiHashtag
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../layout/NavBar-SideBar";
-import { getIdeas } from "../api/apiService";
+import { getIdeas, getMostPopularIdeas, getMostViewIdeas, getLastIdeas, getOneIdea, updateViewTime } from "../api/apiService";
+import { Link } from "react-router-dom";
 
 export default function Home() {
   // define a state to keep track of the active tab
@@ -47,17 +48,46 @@ export default function Home() {
   
   // getIdeas from backend
   const [ideas, setIdeas] = useState([]);
+  const [mostPopularIdeas, setMostPopularIdeas] = useState([]);
+  const [mostViewIdeas, setMostViewIdeas] = useState([]);
+  const [lastestIdeas, setLastestIdeas] = useState([]);
 
   useEffect(() => {
     getIdeas().then(res => {
       setIdeas(res.data);
     });
   }, []);
-  
-  console.log('ideas: '+ideas)
+
+  useEffect(() => {
+    getMostPopularIdeas().then(res => {
+      setMostPopularIdeas(res.data);
+    });
+  }, []);
+
+  useEffect(() => {
+    getMostViewIdeas().then(res => {
+      setMostViewIdeas(res.data);
+    });
+  }, []);
+
+  useEffect(() => {
+    getLastIdeas().then(res => {
+      setLastestIdeas(res.data);
+    });
+  }, []);
+
+
+  const handLeViewIdea = async (ideaId) => {
+    await updateViewTime(ideaId).then((res) => {
+      window.location.href = `/viewIdea/${ideaId}`; 
+    });
+    
+  }
+
 
 return (
     <NavbarSidebarLayout>
+      <div className="relative w-full h-full overfloe-y-auto">
       <div className="px-4 pt-2 sm:ml-64">
           {/* Top idea*/}
           <div className="grid w-full gap-4 xl:grid-cols-2 2xl:grid-cols-3">
@@ -91,358 +121,90 @@ return (
               <div id="fullWidthTabContent" className="border-t border-gray-200 dark:border-gray-600">
                 <div className={activeTab === 'top'? 'pt-4':'hidden pt-4'} id="top" role="tabpanel" aria-labelledby="top-tab">
                   <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
-                    <li className="py-3 sm:py-4">
+                    {mostViewIdeas.map((mostIdea) => (
+                      <li className="py-3 sm:py-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center min-w-0">
                           <img className="flex-shrink-0 w-10 h-10" src="https://flowbite-admin-dashboard.vercel.app/images/products/iphone.png" alt="imac image" />
                           <div className="ml-3">
                             <p className="font-medium text-gray-900 truncate dark:text-white">
-                              Idea Title 1
+                              {mostIdea.title}
                             </p>
                             <div className="flex items-center justify-end flex-1 text-sm text-green-500 dark:text-green-400">
                               
-                              Ten nguoi dang
+                              {mostIdea.user_name}
                               <span className="ml-2 text-gray-500">moc Created At</span>
                             </div>
                           </div>
                         </div>
                         <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          Luot like/ tha tim
+                          {mostIdea.view_time} view
                         </div>
                       </div>
                     </li>
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center min-w-0">
-                          <img className="flex-shrink-0 w-10 h-10" src="https://flowbite-admin-dashboard.vercel.app/images/products/iphone.png" alt="imac image" />
-                          <div className="ml-3">
-                            <p className="font-medium text-gray-900 truncate dark:text-white">
-                              Idea Title 1
-                            </p>
-                            <div className="flex items-center justify-end flex-1 text-sm text-green-500 dark:text-green-400">
-                              
-                              Ten nguoi dang
-                              <span className="ml-2 text-gray-500">moc Created At</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          Luot like/ tha tim
-                        </div>
-                      </div>
-                    </li>
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center min-w-0">
-                          <img className="flex-shrink-0 w-10 h-10" src="https://flowbite-admin-dashboard.vercel.app/images/products/imac.png" alt="imac image" />
-                          <div className="ml-3">
-                            <p className="font-medium text-gray-900 truncate dark:text-white">
-                              Idea Title 2
-                            </p>
-                            <div className="flex items-center justify-end flex-1 text-sm text-green-500 dark:text-green-400">
-                             
-                              Ten nguoi dang
-                              <span className="ml-2 text-gray-500">moc Created At</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          luot like/tha tim
-                        </div>
-                      </div>
-                    </li>
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center min-w-0">
-                          <img className="flex-shrink-0 w-10 h-10" src="https://flowbite-admin-dashboard.vercel.app/images/products/watch.png" alt="watch image" />
-                          <div className="ml-3">
-                            <p className="font-medium text-gray-900 truncate dark:text-white">
-                              Idea Title 3
-                            </p>
-                            <div className="flex items-center justify-end flex-1 text-sm text-red-600 dark:text-red-500">
-                             
-                              Ten nguoi dung
-                              <span className="ml-2 text-gray-500">created At</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          luot like/ tim
-                        </div>
-                      </div>
-                    </li>
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center min-w-0">
-                          <img className="flex-shrink-0 w-10 h-10" src="https://flowbite-admin-dashboard.vercel.app/images/products/ipad.png" alt="ipad image" />
-                          <div className="ml-3">
-                            <p className="font-medium text-gray-900 truncate dark:text-white">
-                              Idea Title
-                            </p>
-                            <div className="flex items-center justify-end flex-1 text-sm text-green-500 dark:text-green-400">
-                              
-                              Nguoi dang
-                              <span className="ml-2 text-gray-500">createdAt</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          luong like
-                        </div>
-                      </div>
-                    </li>
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center min-w-0">
-                          <img className="flex-shrink-0 w-10 h-10" src="https://flowbite-admin-dashboard.vercel.app/images/products/imac.png" alt="imac image" />
-                          <div className="ml-3">
-                            <p className="font-medium text-gray-900 truncate dark:text-white">
-                              Idea Titlr 5
-                            </p>
-                            <div className="flex items-center justify-end flex-1 text-sm text-red-600 dark:text-red-500">
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path clipRule="evenodd" fillRule="evenodd" d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z" />
-                              </svg>
-                              dlda
-                              <span className="ml-2 text-gray-500">meomeo</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                         tim
-                        </div>
-                      </div>
-                    </li>               
+                    ))}
+                    
+                                 
                   </ul>
                 </div>
 
                 <div className={activeTab === 'popular'? 'pt-4':'hidden pt-4'} id="popular" role="tabpanel" aria-labelledby="popular-tab">
                   <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-shrink-0">
-                          <img className="w-8 h-8 rounded-full" src="https://flowbite-admin-dashboard.vercel.app/images/users/neil-sims.png" alt="Neil image" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate dark:text-white">
-                            Neil Sims
-                          </p>
-                          <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                            email@flowbite.com
-                          </p>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          $3320
-                        </div>
-                      </div>
-                    </li>
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center min-w-0">
-                          <img className="flex-shrink-0 w-10 h-10" src="https://flowbite-admin-dashboard.vercel.app/images/products/iphone.png" alt="imac image" />
-                          <div className="ml-3">
-                            <p className="font-medium text-gray-900 truncate dark:text-white">
-                              Idea Title 1
-                            </p>
-                            <div className="flex items-center justify-end flex-1 text-sm text-green-500 dark:text-green-400">
-                              
-                              Ten nguoi dang
-                              <span className="ml-2 text-gray-500">moc Created At</span>
+                    {mostPopularIdeas.map((popuIdea) => (
+                        <li className="py-3 sm:py-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center min-w-0">
+                            <img className="flex-shrink-0 w-10 h-10" src="https://flowbite-admin-dashboard.vercel.app/images/products/iphone.png" alt="imac image" />
+                            <div className="ml-3">
+                              <p className="font-medium text-gray-900 truncate dark:text-white">
+                                {popuIdea.title}
+                              </p>
+                              <div className="flex items-center justify-end flex-1 text-sm text-green-500 dark:text-green-400">
+                                
+                                {popuIdea.user_name}
+                                <span className="ml-2 text-gray-500">{popuIdea.createdAt}</span>
+                              </div>
                             </div>
                           </div>
+                          <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                            {popuIdea.like} like
+                          </div>
                         </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          Luot like/ tha tim
-                        </div>
-                      </div>
-                    </li>
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-shrink-0">
-                          <img className="w-8 h-8 rounded-full" src="https://flowbite-admin-dashboard.vercel.app/images/users/bonnie-green.png" alt="Neil image" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate dark:text-white">
-                            Bonnie Green
-                          </p>
-                          <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                            email@flowbite.com
-                          </p>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          $2467
-                        </div>
-                      </div>
-                    </li>
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-shrink-0">
-                          <img className="w-8 h-8 rounded-full" src="https://flowbite-admin-dashboard.vercel.app/images/users/michael-gough.png" alt="Neil image" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate dark:text-white">
-                            Michael Gough
-                          </p>
-                          <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                            email@flowbite.com
-                          </p>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          $2235
-                        </div>
-                      </div>
-                    </li>
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-shrink-0">
-                          <img className="w-8 h-8 rounded-full" src="https://flowbite-admin-dashboard.vercel.app/images/users/thomas-lean.png" alt="Neil image" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate dark:text-white">
-                            Thomes Lean
-                          </p>
-                          <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                            email@flowbite.com
-                          </p>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          $1842
-                        </div>
-                      </div>
-                    </li>
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-shrink-0">
-                          <img className="w-8 h-8 rounded-full" src="https://flowbite-admin-dashboard.vercel.app/images/users/lana-byrd.png" alt="Neil image" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate dark:text-white">
-                            Lana Byrd
-                          </p>
-                          <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                            email@flowbite.com
-                          </p>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          $1044
-                        </div>
-                      </div>
-                    </li>
+                      </li>
+                    ))}
+                    
+                    
+
+                    
+
                   </ul>
                 </div>
 
                 <div className={activeTab === 'latest'? 'pt-4':'hidden pt-4'} id="latest" role="tabpanel" aria-labelledby="latest-tab">
                   <ul role="list" className="divide-y divide-gray-200 dark:divide-gray-700">
+
+                  {lastestIdeas.map((laIdea) => (
                     <li className="py-3 sm:py-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-shrink-0">
-                          <img className="w-8 h-8 rounded-full" src="https://flowbite-admin-dashboard.vercel.app/images/users/neil-sims.png" alt="Neil image" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate dark:text-white">
-                            Neil Sims
-                          </p>
-                          <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                            email@flowbite.com
-                          </p>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          $3320
-                        </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex-shrink-0">
+                        <img className="w-8 h-8 rounded-full" src="https://flowbite-admin-dashboard.vercel.app/images/users/neil-sims.png" alt="Neil image" />
                       </div>
-                    </li>
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center min-w-0">
-                          <img className="flex-shrink-0 w-10 h-10" src="https://flowbite-admin-dashboard.vercel.app/images/products/iphone.png" alt="imac image" />
-                          <div className="ml-3">
-                            <p className="font-medium text-gray-900 truncate dark:text-white">
-                              Idea Title 1
-                            </p>
-                            <div className="flex items-center justify-end flex-1 text-sm text-green-500 dark:text-green-400">
-                              
-                              Ten nguoi dang
-                              <span className="ml-2 text-gray-500">moc Created At</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          Luot like/ tha tim
-                        </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate dark:text-white">
+                          {laIdea.title}
+                        </p>
+                        <p className="text-sm text-gray-500 truncate dark:text-gray-400">
+                          {laIdea.user_name}
+                        </p>
                       </div>
-                    </li>
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-shrink-0">
-                          <img className="w-8 h-8 rounded-full" src="https://flowbite-admin-dashboard.vercel.app/images/users/bonnie-green.png" alt="Neil image" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate dark:text-white">
-                            Bonnie Green
-                          </p>
-                          <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                            email@flowbite.com
-                          </p>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          $2467
-                        </div>
+                      <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
+                        {laIdea.createdAt}
                       </div>
-                    </li>
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-shrink-0">
-                          <img className="w-8 h-8 rounded-full" src="https://flowbite-admin-dashboard.vercel.app/images/users/michael-gough.png" alt="Neil image" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate dark:text-white">
-                            Michael Gough
-                          </p>
-                          <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                            email@flowbite.com
-                          </p>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          $2235
-                        </div>
-                      </div>
-                    </li>
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-shrink-0">
-                          <img className="w-8 h-8 rounded-full" src="https://flowbite-admin-dashboard.vercel.app/images/users/thomas-lean.png" alt="Neil image" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate dark:text-white">
-                            Thomes Lean
-                          </p>
-                          <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                            email@flowbite.com
-                          </p>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          $1842
-                        </div>
-                      </div>
-                    </li>
-                    <li className="py-3 sm:py-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-shrink-0">
-                          <img className="w-8 h-8 rounded-full" src="https://flowbite-admin-dashboard.vercel.app/images/users/lana-byrd.png" alt="Neil image" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate dark:text-white">
-                            Lana Byrd
-                          </p>
-                          <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                            email@flowbite.com
-                          </p>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                          $1044
-                        </div>
-                      </div>
-                    </li>
+                    </div>
+                  </li>
+                  ))}
+                    
+                    
                   </ul>
                 </div>
               </div>
@@ -707,94 +469,55 @@ return (
             
 
       
-            <div className="my-1"></div>
-            <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm sm:p-6 dark:border-gray-700 dark:bg-gray-800 xl:mb-0">
+      {ideas.map((i) => (
+        <>
+        <div className="my-1"></div>
+        <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm sm:p-6 dark:border-gray-700 dark:bg-gray-800 xl:mb-0">
+          
+          {/* One short idea */}
+          <form className="overflow-y-auto lg:max-h-[60rem] 2xl:max-h-fit text-left">
+            <article className="mb-5">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center">
+                  {/* Avatar user */}
+                  <p className="inline-flex items-center mr-3 text-md font-semibold text-gray-900 dark:text-white"><img className="w-8 h-8 mr-2 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-3.jpg" alt="Bonnie avatar" />{i.user_name}</p>
+                  {/* Created At */}
+                  <p className="text-sm text-gray-600 dark:text-gray-400"><time pubdate dateTime="2022-02-08" title="February 8th, 2022"> {i.createdAt}</time></p>
+                </div>                    
+              </div>
+
+                {/* Subject tag/ tag name */}
+              <div className="flex items-center justify-start flex-1 text-md text-green-500 font-semibold dark:text-green-500">
+                <HiHashtag size='1.3rem'/> {i.tag_name}
+              </div>
+
+              {/* Title of idea */}
+              <p className="mb-3 text-gray-900 font-semibold dark:text-white">{i.title}</p>
+
+            
+              {/* Short content */}
+              <p className="mb-2 text-gray-900 dark:text-white text-justify">
+                {i.content}
+              </p>
               
-              {/* One short idea */}
-              <form className="overflow-y-auto lg:max-h-[60rem] 2xl:max-h-fit text-left">
-                <article className="mb-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center">
-                      {/* Avatar user */}
-                      <p className="inline-flex items-center mr-3 text-md font-semibold text-gray-900 dark:text-white"><img className="w-8 h-8 mr-2 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-3.jpg" alt="Bonnie avatar" />Bonnie Green</p>
-                      {/* Created At */}
-                      <p className="text-sm text-gray-600 dark:text-gray-400"><time pubdate dateTime="2022-02-08" title="February 8th, 2022"> 01/03/2023 4:15 PM</time></p>
-                    </div>                    
-                  </div>
-
-                    {/* Subject tag/ tag name */}
-                  <div className="flex items-center justify-start flex-1 text-md text-green-500 font-semibold dark:text-green-500">
-                    <HiHashtag size='1.3rem'/> Tag name
-                  </div>
-
-                  {/* Title of idea */}
-                  <p className="mb-3 text-gray-900 font-semibold dark:text-white">Title of idea</p>
-
-                
-                  {/* Short content */}
-                  <p className="mb-2 text-gray-900 dark:text-white text-justify">
-                    Thank you for the workshop, it was very productive meeting. I can't wait to start working on this new project with you guys. But first things first, I'am waiting for the offer and pitch deck from you. It would be great to get it by the end o the month.                     Thank you for the workshop, it was very productive meeting. I can't wait to start working on this new project with you guys. But first things first, I'am waiting for the offer and pitch deck from you. It would be great to get it by the end o the month.
-                    Thank you for the workshop, it was very productive meeting. I can't wait to start working on this new project with you guys. But first things first, I'am waiting for the offer and pitch deck from you. It would be great to get it by the end o the month.
-                    Thank you for the workshop, it was very productive meeting. I can't wait to start working on this new project with you guys. But first things first, I'am waiting for the offer and pitch deck from you. It would be great to get it by the end o the month.
-                    Thank you for the workshop, it was very productive meeting. I can't wait to start working on this new project with you guys. But first things first, I'am waiting for the offer and pitch deck from you. It would be great to get it by the end o the month....
-                  </p>
-                  
-                  {/* Call id */}
-                  <a href="/viewidea" className="inline-flex items-center text-xs font-medium text-primary-700 sm:text-sm dark:text-primary-500">
-                    Read more ...
-                  </a>
-               
-                  
-                </article>
-              </form>
-
-            </div>
-
-
-
-            <div className="my-1"></div>
-            <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm sm:p-6 dark:border-gray-700 dark:bg-gray-800 xl:mb-0">
+              {/* Call id */}
+              <a onClick={handLeViewIdea.bind(null, i._id)} className="inline-flex items-center text-xs font-medium text-primary-700 sm:text-sm dark:text-primary-500">
+                Read more ...
+              </a>
+           
               
-              {/* One short idea */}
-              <form className="overflow-y-auto lg:max-h-[60rem] 2xl:max-h-fit text-left">
-                <article className="mb-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center">
-                      {/* Avatar user */}
-                      <p className="inline-flex items-center mr-3 text-md font-semibold text-gray-900 dark:text-white"><img className="w-8 h-8 mr-2 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-3.jpg" alt="Bonnie avatar" />Bonnie Green</p>
-                      {/* Created At */}
-                      <p className="text-sm text-gray-600 dark:text-gray-400"><time pubdate dateTime="2022-02-08" title="February 8th, 2022"> 01/03/2023 4:15 PM</time></p>
-                    </div>                    
-                  </div>
+            </article>
+          </form>
 
-                    {/* Subject tag/ tag name */}
-                  <div className="flex items-center justify-start flex-1 text-md text-green-500 font-semibold dark:text-green-500">
-                    <HiHashtag size='1.3rem'/> Tag name
-                  </div>
+        </div>
+        </>
+      ))}
+            
 
-                  {/* Title of idea */}
-                  <p className="mb-3 text-gray-900 font-semibold dark:text-white">Title of idea</p>
 
-                
-                  {/* Short content */}
-                  <p className="mb-2 text-gray-900 dark:text-white text-justify">
-                    Thank you for the workshop, it was very productive meeting. I can't wait to start working on this new project with you guys. But first things first, I'am waiting for the offer and pitch deck from you. It would be great to get it by the end o the month.                     Thank you for the workshop, it was very productive meeting. I can't wait to start working on this new project with you guys. But first things first, I'am waiting for the offer and pitch deck from you. It would be great to get it by the end o the month.
-                    Thank you for the workshop, it was very productive meeting. I can't wait to start working on this new project with you guys. But first things first, I'am waiting for the offer and pitch deck from you. It would be great to get it by the end o the month.
-                    Thank you for the workshop, it was very productive meeting. I can't wait to start working on this new project with you guys. But first things first, I'am waiting for the offer and pitch deck from you. It would be great to get it by the end o the month.
-                    Thank you for the workshop, it was very productive meeting. I can't wait to start working on this new project with you guys. But first things first, I'am waiting for the offer and pitch deck from you. It would be great to get it by the end o the month.
-                  </p>
 
-                  {/* Call id */}
-                  <a href="/viewidea" className="inline-flex items-center text-xs font-medium text-primary-700 sm:text-sm dark:text-primary-500">
-                    Read more ...
-                  </a>
-               
-                  
-                </article>
-              </form>
-
-            </div>
           </div>
+        </div>
         </div>
     </NavbarSidebarLayout>
 );

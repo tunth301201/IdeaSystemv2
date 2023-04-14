@@ -1,34 +1,226 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AiFillDislike, AiFillLike, AiOutlineDislike, AiOutlineLike } from 'react-icons/ai';
 import {
+  HiGlobe,
+  HiKey,
     HiHashtag
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../layout/NavBar-SideBar";
+import { createCommentOfIdea, deleteOneIdea, getCommentsOfIdea, getOneIdea, deleteOneComment, postEmotionOfIdeaIdByUserId, deleteEmotion, getEmotionByUserIdIdeaId, downloadFile } from '../api/apiService';
+import { useParams, Link } from "react-router-dom";
 
 export default function ViewIdea() {
+  const { id } = useParams();
+  const replyContentRef = useRef();
 
-    const [isLiked, setIsLiked] = useState(false);
-    const [isDisliked, setIsDisliked] = useState(false);
+   const [idea, setIdea] = useState(null);
+   const [comments, setComments] = useState([]);
 
-    const handleLikeClick = () => {
-        setIsLiked(!isLiked);
-        setIsDisliked(false);
+   const [isLiked, setIsLiked] = useState(false);
+   const [isDisliked, setIsDisliked] = useState(false);
+
+   const [likeCount, setLikeCount] = useState(0);
+    const [dislikeCount, setDislikeCount] = useState(0);
+
+
+
+    useEffect(() => {
+      const fetchIdea = async () => {
+        try {
+          getOneIdea(id)
+          .then(res => {
+            setIdea(res.data);
+          })
+          .catch(error => {
+            console.error("Error getting idea:", error);
+          });
+        } catch (error) {
+          // Handle error if needed
+        }
+      };
+
+      fetchIdea();
+    }, []);
+
+
+    useEffect(() => {
+      if(idea) {
+        setLikeCount(idea.like);
+        setDislikeCount(idea.dislike);
+      }
+    }, [idea]);
+
+    useEffect(() => {
+      if(idea) {
+        try {
+          getEmotionByUserIdIdeaId(id, "6436847c931cfa456a37aafb")
+          .then(res => {
+            console.log(res.data.isLike)
+            if (res.data.isLike === true) {
+              setIsLiked(true);
+              setIsDisliked(false);
+            }
+            if (res.data.isLike === false) {
+              setIsDisliked(true);
+              setIsLiked(false);
+            }
+          })
+          .catch(error => {
+            console.error("Error getting idea:", error);
+          });
+        } catch (error) {
+          // Handle error if needed
+        }
+      }
+    }, [idea]);
+
+
+  
+
+
+    const fetchComment = async () => {
+      try {
+        getCommentsOfIdea(id)
+        .then(res => {
+          setComments(res.data);
+
+        })
+        .catch(error => {
+          console.error("Error getting comments:", error);
+        });
+      } catch (error) {
+        // Handle error if needed
+      }
     };
 
-    const handleDislikeClick = () => {
-        setIsDisliked(!isDisliked);
+    useEffect(() => {
+      fetchComment();
+    }, []);
+
+    
+
+
+
+    const handleLikeClick = async () => {
+      if (isLiked) {
         setIsLiked(false);
+        setIsDisliked(false);
+        
+        const resLikeCount = await deleteEmotion(id, "6436847c931cfa456a37aafb");
+        setLikeCount(resLikeCount.data.like);
+        setDislikeCount(resLikeCount.data.dislike);
+        
+      }
+      else {
+        setIsLiked(true);
+        setIsDisliked(false);
+      
+        const resLikeCount = await postEmotionOfIdeaIdByUserId(id, "6436847c931cfa456a37aafb", true);
+        
+        setLikeCount(resLikeCount.data.like);
+        setDislikeCount(resLikeCount.data.dislike);
+
+        
+      }
+        
+        
     };
+
+    const handleDislikeClick = async () => {
+      if (isDisliked) {
+        setIsDisliked(false);
+        setIsLiked(false);
+        
+        const resDisLikeCount = await deleteEmotion(id, "6436847c931cfa456a37aafb");
+        
+        setDislikeCount(resDisLikeCount.data.dislike);
+        setLikeCount(resDisLikeCount.data.like);
+
+      }
+      else {
+        setIsDisliked(true);
+        setIsLiked(false);
+        
+        const resDisLikeCount = await postEmotionOfIdeaIdByUserId(id, "6436847c931cfa456a37aafb", false);
+        setDislikeCount(resDisLikeCount.data.dislike);
+        setLikeCount(resDisLikeCount.data.like);
+      }
+       
+       
+        
+    };
+
+    const handleRemoveIdea = async () => {
+      await deleteOneIdea(id);
+      window.location.href = `/profile/${idea.user_id}`; 
+    }
+
+    const handleDeleteCommentClick = async (cmtId) => {
+      await deleteOneComment(cmtId);
+      fetchComment();
+    }
+
+    function formatDateTimeDislay(inputString) {
+      // Convert input string to JavaScript Date object
+      var date = new Date(inputString);
+    
+      // Extract individual components (year, month, day, hours, minutes, seconds) from the Date object
+      var year = date.getFullYear();
+      var month = ("0" + (date.getMonth() + 1)).slice(-2); // Months are zero-indexed, so we add 1 and pad with leading zero
+      var day = ("0" + date.getDate()).slice(-2); // Pad with leading zero
+      var hours = ("0" + date.getHours()).slice(-2); // Pad with leading zero
+      var minutes = ("0" + date.getMinutes()).slice(-2); // Pad with leading zero
+      var seconds = ("0" + date.getSeconds()).slice(-2); // Pad with leading zero
+    
+      // Format the date and time components into a user-friendly string
+      var formattedDateTime = day + "/" + month + "/" + year + " " + hours + ":" + minutes + ":" + seconds;
+    
+      // Return the formatted date and time string
+      return formattedDateTime;
+    }
+
+    const [isGlobal, setIsGlobal] = useState(true);
+
+    const handleClick = () => {
+      setIsGlobal(!isGlobal);
+    };
+
+
+    const handleSubmit = async (event) => {
+      event.preventDefault();
+      const userId = "6436847c931cfa456a37aafb";
+      const comment = replyContentRef.current.value;
+      let isAnonymity = isGlobal ? false : true;
+
+      const formCommentData = new FormData();
+      formCommentData.append('user_id', userId);
+      formCommentData.append('comment', comment);
+      formCommentData.append('isAnonymous', isAnonymity);
+
+      try {
+        await createCommentOfIdea(id, formCommentData);
+        replyContentRef.current.value = '';
+        fetchComment();
+      }
+      catch(error){
+        throw new Error(error);
+      }
+    };
+
+    const handleDownloadFile = async (fileId) => {
+      await downloadFile(fileId);
+    };
+
 
 return (
     <NavbarSidebarLayout>
+      <div className="relative w-full h-full">
        <div className="px-4 pt-2 sm:ml-64">
-       <div className="grid w-full grid-cols-1 ">
-            <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm sm:p-6 dark:border-gray-700 dark:bg-gray-800 xl:mb-0">
+        <div className="grid w-full grid-cols-1 ">
+            <div className="p-4 mb-5 bg-white border border-gray-200 rounded-lg shadow-sm sm:p-6 dark:border-gray-700 dark:bg-gray-800 xl:mb-0">
               
-
-              {/* Chat */}
-              <form className="overflow-y-auto lg:max-h-[60rem] 2xl:max-h-fit text-left">
+          {idea ? 
+            <div className="overflow-y-auto 2xl:max-h-fit text-left">
                 <article className="mb-5">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center">
@@ -39,39 +231,55 @@ return (
                           src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
                           alt="Jese avatar"
                         />
-                        Jese Leos
+                        {idea.user_name}
                       </p>
                       {/* Created At */}
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         <time pubdate dateTime="2022-02-08" title="February 8th, 2022">
                           {" "}
-                          01/03/2023 4:15 PM
+                          {idea.createdAt}
                         </time>
                       </p>
+                    </div>
+
+                    <button id="dropdownComment4Button" aria-expanded="false" data-dropdown-toggle="dropdownComment4" class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-gray-600" type="button">
+                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path>
+                        </svg>
+                        <span class="sr-only">Idea settings</span>
+                    </button>
+
+                    <div id="dropdownComment4" class="z-10 hidden bg-white divide-y divide-gray-100 rounded shadow w-30 dark:bg-gray-700 dark:divide-gray-600 block" style={{position: 'absolute', inset: 'auto auto 0px 0px', margin: '0px', transform: 'translate3d(834px, -3987.5px, 0px)'}} data-popper-placement="top" data-popper-reference-hidden="" data-popper-escaped="">
+                        <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconHorizontalButton">
+                            <li>
+                                <Link to={`/editIdea/${id}`} class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</Link>
+                            </li>
+                            <li>
+                                <a href="#" onClick={handleRemoveIdea} class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Remove</a>
+                            </li>
+                        </ul>
                     </div>
                   </div>
 
                   {/* Subject tag/ tag name */}
                   <div className="flex items-center justify-start flex-1 text-md text-green-500 font-semibold dark:text-green-500">
-                    <HiHashtag size='1.3rem'/> Tag name
+                    <HiHashtag size='1.3rem'/> {idea.tag_name}
                   </div>
 
                   {/* Title of idea */}
-                  <p className="mb-3 text-gray-900 font-semibold dark:text-white">Title of idea</p>
+                  <p className="mb-3 text-gray-900 font-semibold dark:text-white">{idea.title}</p>
 
 
                   {/* content */}
                   <p className="mb-2 text-gray-900 dark:text-white text-justify">
-                    Thank you for the workshop, it was very productive meeting. I can't wait to start working on this new project with you guys. But first things first, I'am waiting for the offer and pitch deck from you. It would be great to get it by the end o the month.                     Thank you for the workshop, it was very productive meeting. I can't wait to start working on this new project with you guys. But first things first, I'am waiting for the offer and pitch deck from you. It would be great to get it by the end o the month.
-                    Thank you for the workshop, it was very productive meeting. I can't wait to start working on this new project with you guys. But first things first, I'am waiting for the offer and pitch deck from you. It would be great to get it by the end o the month.
-                    Thank you for the workshop, it was very productive meeting. I can't wait to start working on this new project with you guys. But first things first, I'am waiting for the offer and pitch deck from you. It would be great to get it by the end o the month.
-                    Thank you for the workshop, it was very productive meeting. I can't wait to start working on this new project with you guys. But first things first, I'am waiting for the offer and pitch deck from you. It would be great to get it by the end o the month....
+                    {idea.content}
                   </p>
                   <p className="mb-3 text-gray-900 dark:text-white">Looking forward to it! Thanks.</p>
 
 
-                  <div className="items-center space-x-4 flex">
+                  <div className="items-center space-x-4 flex flex-wrap">
                     {/* Item */}
+                    {idea.files.map(f => (
                     <div className="flex items-center p-3 mb-3.5 border border-gray-200 dark:border-gray-700 rounded-lg">
                       <div className="flex items-center justify-center w-10 h-10 mr-3 rounded-lg bg-primary-100 dark:bg-primary-900">
                         <svg
@@ -89,11 +297,11 @@ return (
                         </svg>
                       </div>
                       <div className="mr-4">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">flowbite_offer_345"</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">PDF, 2.3 MB</p>
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{f.filename}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{f.contentType.split('/')[1]}, {(f.length / (1024 * 1024)).toFixed(2)} MB</p>
                       </div>
                       <div className="flex items-center ml-auto">
-                        <button type="button" className="p-2 rounded hover:bg-gray-100">
+                        <button onClick={handleDownloadFile.bind(f._id)} type="button" className="p-2 rounded hover:bg-gray-100">
                           <svg
                             className="w-5 h-5 text-gray-500 dark:text-gray-400"
                             fill="currentColor"
@@ -109,63 +317,34 @@ return (
                           <span className="sr-only">Download</span>
                         </button>
                       </div>
-                    </div>
 
-                    {/* Item */}
-                    <div className="flex items-center p-3 mb-3.5 border border-gray-200 dark:border-gray-700 rounded-lg">
-                      <div className="flex items-center justify-center w-10 h-10 mr-3 bg-teal-100 rounded-lg dark:bg-teal-900">
-                        <svg
-                          className="w-5 h-5 text-teal-600 lg:w-6 lg:h-6 dark:text-teal-300"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                          xmlns="http://www.w3.org/2000/svg"
-                          aria-hidden="true">
-                          <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-                        </svg>
-                      </div>
-                      <div className="mr-4">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">bergside_pitch"</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">PPTX, 10.1 MB</p>
-                      </div>
-                      <div className="flex items-center ml-auto">
-                        <button type="button" className="p-2 rounded hover:bg-gray-100">
-                          <svg
-                            className="w-5 h-5 text-gray-500 dark:text-gray-400"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                            aria-hidden="true">
-                            <path
-                              clipRule="evenodd"
-                              fillRule="evenodd"
-                              d="M12 2.25a.75.75 0 01.75.75v11.69l3.22-3.22a.75.75 0 111.06 1.06l-4.5 4.5a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 111.06-1.06l3.22 3.22V3a.75.75 0 01.75-.75zm-9 13.5a.75.75 0 01.75.75v2.25a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5V16.5a.75.75 0 011.5 0v2.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V16.5a.75.75 0 01.75-.75z"
-                            />
-                          </svg>
-                          <span className="sr-only">Download</span>
-                        </button>
-                      </div>
+                      
                     </div>
-
+                    ))}
+                    
                   </div>
 
                   <div className="flex justify-end items-center mb-2 space-x-2">
-                    <button type="button" onClick={handleDislikeClick} className="py-1.5 px-3 inline-flex items-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 dark:bg-gray-700">
+                    <button type="button" onClick={handleDislikeClick.bind()} className="py-1.5 px-3 inline-flex items-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 dark:bg-gray-700">
                        
                        {isDisliked ? <AiFillDislike size="2rem" style={{ color: "red" }} /> : <AiOutlineDislike size="2rem" />}
-                      <span className="text-md font-medium text-gray-500 dark:text-gray-400 ml-1">14</span>
+                      <span className="text-md font-medium text-gray-500 dark:text-gray-400 ml-1">{dislikeCount}</span>
                     </button>
 
-                    <button type="button" onClick={handleLikeClick} className="py-1.5 px-3 inline-flex items-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 dark:bg-gray-700">
+                    <button type="button" onClick={handleLikeClick.bind(null)} className="py-1.5 px-3 inline-flex items-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 dark:bg-gray-700">
                     {isLiked ? <AiFillLike size="2rem" style={{ color: "blue" }} /> : <AiOutlineLike size="2rem" />}
-                      <span className="text-md font-medium text-gray-500 dark:text-gray-400 ml-1">8</span>
+                      <span className="text-md font-medium text-gray-500 dark:text-gray-400 ml-1">{likeCount}</span>
                     </button>
                   </div>
 
                   <div class="h-0 flex justify-center items-center border border-gray-300 rounded-lg mb-8"></div>
 
 
-                    {/* Comment */}
-                    <article className="pl-12 mb-5 my-1 pb-3">
+
+                {comments ? comments.map(cmt => (
+
+                  <div>
+                    <article className="pl-12 mb-5 my-1">
                     <footer className="flex items-center justify-between mb-2">
                       <div className="flex items-center">
                         <p className="inline-flex items-center mr-3 text-sm font-semibold text-gray-900 dark:text-white">
@@ -174,140 +353,62 @@ return (
                             src="https://flowbite.com/docs/images/people/profile-picture-1.jpg"
                             alt="Joseph avatar"
                           />
-                          Joseph McFallen
+                          {cmt.user_id.fullname}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           <time pubdate dateTime="2022-02-08" title="February 8th, 2022">
                             {" "}
-                            01/03/2023 4:15 PM
+                            {formatDateTimeDislay(cmt.createdAt)}
                           </time>
                         </p>
                       </div>
 
                       {/* Neu cmt do la cua minh thi cho nhan xoa */}
 
-                <button id="dropdownComment4Button" aria-expanded="false" data-dropdown-toggle="dropdownComment4" class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-gray-600" type="button">
-                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path>
-                    </svg>
-                    <span class="sr-only">Comment settings</span>
-                </button>
+                      <button id="dropdownComment5Button" aria-expanded="false" data-dropdown-toggle="dropdownComment5" class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-gray-600" type="button">
+                          <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path>
+                          </svg>
+                          <span class="sr-only">Comment settings</span>
+                      </button>
 
-                <div id="dropdownComment4" class="z-10 hidden bg-white divide-y divide-gray-100 rounded shadow w-30 dark:bg-gray-700 dark:divide-gray-600 block" style={{position: 'absolute', inset: 'auto auto 0px 0px', margin: '0px', transform: 'translate3d(834px, -3987.5px, 0px)'}} data-popper-placement="top" data-popper-reference-hidden="" data-popper-escaped="">
-                    <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconHorizontalButton">
-                        <li>
-                            <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Remove</a>
-                        </li>
-                    </ul>
-                </div>
-
-
+                      <div id="dropdownComment5" class="z-10 hidden bg-white divide-y divide-gray-100 rounded shadow w-30 dark:bg-gray-700 dark:divide-gray-600 block" style={{position: 'absolute', inset: 'auto auto 0px 0px', margin: '0px', transform: 'translate3d(834px, -3987.5px, 0px)'}} data-popper-placement="top" data-popper-reference-hidden="" data-popper-escaped="">
+                          <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconHorizontalButton">
+                              <li>
+                                  <a onClick={handleDeleteCommentClick.bind(null, cmt._id)} class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Remove</a>
+                              </li>
+                          </ul>
+                      </div>
 
                     </footer>
-                    <p className="mb-2 text-gray-900 dark:text-white">
-                      Hello{" "}
-                      <a href="#" className="font-medium hover:underline text-primary-600 dark:text-primary-500">
-                        @jeseleos
-                      </a>{" "}
-                      I need some informations about flowbite react version.
+
+                    <p className="mb-0 text-gray-900 dark:text-white">
+                      {cmt.comment}
                     </p>
-                  </article>
+
+                        
+                    </article>
+
                     
-                    {/* Comment */}
-                    <article className="pl-12 mb-5 my-1 pb-3">
-                    <footer className="flex items-center justify-between mb-2">
-                      <div className="flex items-center">
-                        <p className="inline-flex items-center mr-3 text-sm font-semibold text-gray-900 dark:text-white">
-                          <img
-                            className="w-6 h-6 mr-2 rounded-full"
-                            src="https://flowbite.com/docs/images/people/profile-picture-1.jpg"
-                            alt="Joseph avatar"
-                          />
-                          Joseph McFallen
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          <time pubdate dateTime="2022-02-08" title="February 8th, 2022">
-                            {" "}
-                            01/03/2023 4:15 PM
-                          </time>
-                        </p>
-                      </div>
-                    </footer>
-                    <p className="mb-2 text-gray-900 dark:text-white">
-                      Hello{" "}
-                      <a href="#" className="font-medium hover:underline text-primary-600 dark:text-primary-500">
-                        @jeseleos
-                      </a>{" "}
-                      I need some informations about flowbite react version.
-                    </p>
-                  </article>
+                  </div>
+
+                )) : ""}
 
 
-                    {/* Comment */}
-                  <article className="pl-12 mb-5 my-1">
-                    <footer className="flex items-center justify-between mb-2">
-                      <div className="flex items-center">
-                        <p className="inline-flex items-center mr-3 text-sm font-semibold text-gray-900 dark:text-white">
-                          <img
-                            className="w-6 h-6 mr-2 rounded-full"
-                            src="https://flowbite.com/docs/images/people/profile-picture-1.jpg"
-                            alt="Joseph avatar"
-                          />
-                          Joseph McFallen
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          <time pubdate dateTime="2022-02-08" title="February 8th, 2022">
-                            {" "}
-                            01/03/2023 4:15 PM
-                          </time>
-                        </p>
-                      </div>
-                    </footer>
-                    <p className="mb-2 text-gray-900 dark:text-white">
-                      Hello{" "}
-                      <a href="#" className="font-medium hover:underline text-primary-600 dark:text-primary-500">
-                        @jeseleos
-                      </a>{" "}
-                      I need some informations about flowbite react version.
-                    </p>
-                  </article>
-                    
-                    {/* Reply */}
-                  <article className="pl-20 mb-5">
-                    <footer className="flex items-center justify-between mb-2">
-                      <div className="flex items-center">
-                        <p className="inline-flex items-center mr-3 text-sm font-semibold text-gray-900 dark:text-white">
-                          <img
-                            className="w-6 h-6 mr-2 rounded-full"
-                            src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-                            alt="Jese avatar"
-                          />
-                          Jese Leos
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          <time pubdate dateTime="2022-02-08" title="February 8th, 2022">
-                            {" "}
-                            01/03/2023 4:15 PM
-                          </time>
-                        </p>
-                      </div>
-                    </footer>
-                    <p className="mb-4 text-gray-900 dark:text-white">
-                      Hi{" "}
-                      <a href="#" className="font-medium hover:underline text-primary-600 dark:text-primary-500">
-                        @josephh
-                      </a>{" "}
-                      Sure, just let me know whean you are available and we can speak.
-                    </p>
-                    <label htmlFor="chat" className="sr-only">
-                      Your message
-                    </label>
-                    <div className="flex items-center mb-5">
+                {/* Your comment */}
+                <label htmlFor="chat" className="sr-only">
+                  Your message
+                </label>
+                    <form onSubmit={handleSubmit} className="flex items-center mb-5">
+                      <button id="globalButton"  onClick={handleClick} class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-gray-600" type="button">
+                          {isGlobal ? <HiGlobe size="1.3rem" /> : <HiKey size="1.3rem" />}
+                      </button>
                       <textarea
                         id="chat"
                         rows={1}
+                        ref={replyContentRef}
                         className="block mr-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="Reply ..."
+                        placeholder="Comment ..."
                         data-gramm="false"
                         wt-ignore-input="true"
                         defaultValue={""}
@@ -325,28 +426,29 @@ return (
                         </svg>
                         <span className="sr-only">Send message</span>
                       </button>
-                    </div>
-                    <a href="/home" className="inline-flex items-center text-xs font-medium cursor-pointer hover:underline text-primary-700 sm:text-sm dark:text-primary-500">
-                      Hide away
-                      <svg className="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path
-                          clipRule="evenodd"
-                          fillRule="evenodd"
-                          d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"
-                        />
-                      </svg>
-                    </a>
-                  </article>
+                    </form>
+                   
+                    
+
+
+                    
+                    
+                    
+                    
 
 
                 </article>
-              </form>
+              </div>
+        : ""}
+           
+              
 
 
 
 
             </div>
           </div>
+       </div>
        </div>
     </NavbarSidebarLayout>
 );
