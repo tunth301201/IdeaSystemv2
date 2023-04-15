@@ -2,9 +2,11 @@ import React from "react";
 import {
     HiHome,
     HiTag,
-    HiUser
+    HiUser,
+    HiChartPie
 } from "react-icons/hi";
 import { Link, useLocation } from "react-router-dom";
+import { decodeJwt } from "../api/jwtDecode";
 
 
 export default function SideBar(props) { 
@@ -34,7 +36,12 @@ export default function SideBar(props) {
         {
             icon: <HiUser size='1.4rem'/>,
             label: "Profile",
-            path: "/profile"
+            path: `/profile/${decodeJwt().userId}`
+        },
+        {
+            icon: <HiChartPie size='1.3rem'/>,
+            label: "Dashboard",
+            path: `/dashboard/${decodeJwt().userId}`
         }
     ]
 

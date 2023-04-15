@@ -5,9 +5,12 @@ import {
   HiTag
 } from "react-icons/hi";
 import NavbarSidebarLayout from "../layout/NavBar-SideBar";
-import { createIdea } from '../api/apiService';
+import { createIdea, getUserInfoById, postNotification } from '../api/apiService';
 import { useParams } from "react-router-dom";
 import { getOneTag } from '../api/apiService';
+import { decodeJwt } from '../api/jwtDecode';
+import femaleavatarImg from "../assets/img/femaleavatar.jpg"
+import maleavatarImg from "../assets/img/maleavatar.jpg"
 
 
 
@@ -17,6 +20,20 @@ export default function CreateIdea() {
   console.log("tag id: "+id)
 
   const [tag, setTag] = useState(null);
+
+  const [userInfo, setUserInfo] = useState(null);
+  useEffect(() => {
+    getUserInfoById(decodeJwt().userId)
+    .then(res => {
+      console.log(res.data);
+      setUserInfo(res.data);
+
+    })
+    .catch(error => {
+      console.error("Error getting user:", error);
+    });
+  }, []);
+  
     
 
    useEffect(() => {
@@ -30,8 +47,6 @@ export default function CreateIdea() {
         console.error("Error getting tag:", error);
       });
   }, []);
-
-
 
 
   const titleRef = useRef();
@@ -65,7 +80,7 @@ export default function CreateIdea() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const tagId = id;
-    const userId = "6436847c931cfa456a37aafb"; // lay tu token
+    const userId = decodeJwt().userId; // lay tu token
     const title = titleRef.current.value;
     const content = contentRef.current.value;
     let isAnonymity = isGlobal ? false : true;
@@ -83,8 +98,15 @@ export default function CreateIdea() {
     });
 
     try {
-      await createIdea(formData);
-      // toast.success('Idea created successfully');
+      await createIdea(formData)
+        .then(async res => {
+          console.log("new idea id: "+res.data._id)
+          await postNotification("643684b3931cfa456a37aafe",decodeJwt().userId, res.data._id,"Post")
+        })
+        .catch(error => {
+          console.error("Error getting tag:", error);
+        });
+      
       window.location.href = `/Profile/${userId}`; 
     }
     catch (error) {
@@ -110,14 +132,15 @@ return (
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center">
                           {/* Avatar user */}
-                        <p className="inline-flex items-center mr-3 text-md font-semibold text-gray-900 dark:text-white">
+                        {userInfo ? (<p className="inline-flex items-center mr-3 text-md font-semibold text-gray-900 dark:text-white">
                           <img
                             className="w-8 h-8 mr-2 rounded-full"
-                            src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-                            alt="Jese avatar"
+                            src={userInfo.gender === "Female" ? femaleavatarImg : maleavatarImg}
+                            alt="avatar"
                           />
-                          Lay tu token
-                        </p>
+                          {userInfo.fullname}
+                        </p>): ""} 
+                        
 
 
                           {/* Public mode or anyos */}
@@ -125,8 +148,6 @@ return (
                           <button id="globalButton"  onClick={handleClick} class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-gray-600" type="button">
                               {isGlobal ? <HiGlobe size="1.3rem" /> : <HiKey size="1.3rem" />}
                           </button>
-
-                                
                         
                       </div>
                     </div>
@@ -202,23 +223,7 @@ return (
                           <p className="text-sm font-semibold text-gray-900 dark:text-white">{file.name}</p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">{file.type.split('/')[1]}, {file.size} MB</p>
                         </div>
-                        <div className="flex items-center ml-auto">
-                          <button type="button" className="p-2 rounded hover:bg-gray-100">
-                            <svg
-                              className="w-5 h-5 text-gray-500 dark:text-gray-400"
-                              fill="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                              aria-hidden="true">
-                              <path
-                                clipRule="evenodd"
-                                fillRule="evenodd"
-                                d="M12 2.25a.75.75 0 01.75.75v11.69l3.22-3.22a.75.75 0 111.06 1.06l-4.5 4.5a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 111.06-1.06l3.22 3.22V3a.75.75 0 01.75-.75zm-9 13.5a.75.75 0 01.75.75v2.25a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5V16.5a.75.75 0 011.5 0v2.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V16.5a.75.75 0 01.75-.75z"
-                              />
-                            </svg>
-                            <span className="sr-only">Download</span>
-                          </button>
-                        </div>
+                     
                         <button
                         onClick={handleDeleteNewFileClick.bind(null, index)}
                         className="relative top-0 right-0 transform translate-x-1/2 -translate-y-5 bg-red-400 text-white rounded-full w-5 h-5 flex items-center justify-center"

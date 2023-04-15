@@ -12,6 +12,7 @@ import Tag from "./pages/Tag.jsx";
 import ViewIdea from "./pages/ViewIdea.jsx";
 import Login from "./pages/Login.jsx";
 import EditIdea from "./pages/EditIdea.jsx";
+import IdeasOfTag from "./pages/IdeasOfTag.jsx";
 
 export default function App() {
   return (
@@ -24,12 +25,13 @@ export default function App() {
             <Route path="/viewIdea/:id" element={<ViewIdea/>} />
             <Route path="/createIdea/:id" element={<CreateIdea />}/>
             <Route path="/editIdea/:id" element={<EditIdea />}/>
+            <Route path="/ideasOfTag/:tagId" element={<IdeasOfTag />}/>
             
             <Route path="/profile/:id" element={<Profile />}/>
             <Route path="/" element={<Login />}/>
 
             <Route path="/privacy" element={<Privacy />}/>
-            <Route path="/dashboard" element={<Dashboard />}/>
+            <Route path="/dashboard/:id" element={<Dashboard />}/>
          
         </Routes>
       </BrowserRouter>

@@ -7,6 +7,9 @@ import {
 import NavbarSidebarLayout from "../layout/NavBar-SideBar";
 import { editIdea, getOneIdea } from '../api/apiService';
 import { useParams } from "react-router-dom";
+import { decodeJwt } from '../api/jwtDecode';
+import femaleavatarImg from "../assets/img/femaleavatar.jpg"
+import maleavatarImg from "../assets/img/maleavatar.jpg"
 
 
 
@@ -68,7 +71,7 @@ export default function EditIdea() {
   
   useEffect(() => {
     if (idea) {
-      setIsGlobal(idea.isAnonymity ? false : true);
+      setIsGlobal(idea.idea.isAnonymity ? false : true);
     }
   }, [idea]); 
 
@@ -95,8 +98,8 @@ export default function EditIdea() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const tagId = idea.tag_id;
-    const userId = "6436847c931cfa456a37aafb"; // lay tu token
+    const tagId = idea.idea.tag_id;
+    const userId = decodeJwt().userId; // lay tu token
     const title = updatedTitle ? updatedTitle : titleRef.current.value;
     const content = updatedContent ? updatedContent : contentRef.current.value;
     let isAnonymity = isGlobal ? false : true;
@@ -145,10 +148,10 @@ return (
                         <p className="inline-flex items-center mr-3 text-md font-semibold text-gray-900 dark:text-white">
                           <img
                             className="w-8 h-8 mr-2 rounded-full"
-                            src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-                            alt="Jese avatar"
+                            src={idea.idea.user_id.gender === "Female" ? femaleavatarImg : maleavatarImg}
+                            alt="avatar"
                           />
-                          Lay tu token
+                          {idea.isAnonymity ? "Anonymity User" : idea.idea.user_id.fullname}
                         </p>
 
 
@@ -165,7 +168,7 @@ return (
 
                     {/* Subject tag/ tag name */}
                     <div className="flex items-center justify-start flex-1 text-md text-green-500 font-semibold dark:text-green-500 mb-6">
-                      <HiTag size='1.3rem'/> {idea.tag_name}
+                      <HiTag size='1.3rem'/> {idea.idea.tag_id.subject}
                     </div>
 
                     {/* Title of idea */}
@@ -179,7 +182,7 @@ return (
                       ref={titleRef}
                       data-gramm="false"
                       wt-ignore-input="true"
-                      defaultValue={idea.title}
+                      defaultValue={idea.idea.title}
                       onChange={handleTitleChange} 
                       />
 
@@ -194,7 +197,7 @@ return (
                       ref={contentRef}
                       data-gramm="false"
                       wt-ignore-input="true"
-                      defaultValue={idea.content}
+                      defaultValue={idea.idea.content}
                       onChange={handleContentChange} 
                       />
 
@@ -236,23 +239,7 @@ return (
                           <p className="text-sm font-semibold text-gray-900 dark:text-white">{file.filename}</p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">{file.contentType.split('/')[1]}, {(file.length / (1024 * 1024)).toFixed(2)} MB</p>
                         </div>
-                        <div className="flex items-center ml-auto">
-                          <button type="button" className="p-2 rounded hover:bg-gray-100">
-                            <svg
-                              className="w-5 h-5 text-gray-500 dark:text-gray-400"
-                              fill="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                              aria-hidden="true">
-                              <path
-                                clipRule="evenodd"
-                                fillRule="evenodd"
-                                d="M12 2.25a.75.75 0 01.75.75v11.69l3.22-3.22a.75.75 0 111.06 1.06l-4.5 4.5a.75.75 0 01-1.06 0l-4.5-4.5a.75.75 0 111.06-1.06l3.22 3.22V3a.75.75 0 01.75-.75zm-9 13.5a.75.75 0 01.75.75v2.25a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5V16.5a.75.75 0 011.5 0v2.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V16.5a.75.75 0 01.75-.75z"
-                              />
-                            </svg>
-                            <span className="sr-only">Download</span>
-                          </button>
-                        </div>
+                        
 
                         <button
                         onClick={handelDeleteOldFileClick.bind(null, file._id)}

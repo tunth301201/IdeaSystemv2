@@ -6,6 +6,9 @@ import {
 import NavbarSidebarLayout from "../layout/NavBar-SideBar";
 import { getTags } from '../api/apiService';
 import { Link } from 'react-router-dom';
+import femaleavatarImg from "../assets/img/femaleavatar.jpg"
+import maleavatarImg from "../assets/img/maleavatar.jpg"
+import { decodeJwt } from '../api/jwtDecode';
 
 export default function Tag() {
 
@@ -16,7 +19,28 @@ export default function Tag() {
     });
   }, []);
 
-return (
+  const today = new Date();
+
+  function formatDateTimeDislay(inputString) {
+    // Convert input string to JavaScript Date object
+    var date = new Date(inputString);
+
+    // Extract individual components (year, month, day, hours, minutes, seconds) from the Date object
+    var year = date.getFullYear();
+    var month = ("0" + (date.getMonth() + 1)).slice(-2); // Months are zero-indexed, so we add 1 and pad with leading zero
+    var day = ("0" + date.getDate()).slice(-2); // Pad with leading zero
+    var hours = ("0" + date.getHours()).slice(-2); // Pad with leading zero
+    var minutes = ("0" + date.getMinutes()).slice(-2); // Pad with leading zero
+    var seconds = ("0" + date.getSeconds()).slice(-2); // Pad with leading zero
+
+    // Format the date and time components into a user-friendly string
+    var formattedDateTime = day + "/" + month + "/" + year + " " + hours + ":" + minutes + ":" + seconds;
+
+    // Return the formatted date and time string
+    return formattedDateTime;
+}
+
+return ( 
     <NavbarSidebarLayout>
       <div className="relative w-full h-full overfloe-y-auto">
        <div className="px-4 pt-2 sm:ml-64">
@@ -36,29 +60,35 @@ return (
                   <p className="inline-flex items-center mr-3 text-md font-semibold text-gray-900 dark:text-white">
                     <img
                       className="w-8 h-8 mr-2 rounded-full"
-                      src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-                      alt="Jese avatar"
+                      src={t.user_id.gender === "Female" ? femaleavatarImg : maleavatarImg}
+                      alt="avatar"
                     />
-                    {t.user_name}
+                    {t.user_id.fullname}
                   </p>
+
                   {/* Created At */}
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     <time pubdate dateTime="2022-02-08" title="February 8th, 2022">
                       {" "}
-                      {t.createdAt}
+                      {formatDateTimeDislay(t.createdAt)}
                     </time>
                   </p>
                 </div>
 
-                <Link to={`/createIdea/${t._id}`} class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-gray-600" type="button">
-                  <HiPlusCircle size='1.7rem'/>
-                </Link>
+                {(today<new Date(t.start_dateOfTag) || today>new Date(t.end_dateOfTag))? (
+                    ""
+                ): (
+                  <Link to={`/createIdea/${t._id}`} class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-gray-600" type="button">
+                    <HiPlusCircle size='1.7rem'/>
+                  </Link>
+                )}
+               
               </div>
 
               {/* Subject tag/ tag name */}
-              <div className="flex items-center justify-start flex-1 text-md text-green-500 font-semibold dark:text-green-500">
+              <Link to={`/ideasOfTag/${t._id}`} className="flex items-center justify-start flex-1 text-md text-green-500 font-semibold dark:text-green-500">
                 <HiHashtag size='1.3rem'/> {t.subject}
-              </div>
+              </Link>
 
 
               {/* content */}
@@ -73,7 +103,7 @@ return (
                   <p className="text-md text-green-500 font-semibold dark:text-green-500">
                       <time pubdate dateTime="2022-02-08" title="February 8th, 2022">
                         {" "}
-                        Start Date: {t.start_dateOfTag}
+                        Start Date: {formatDateTimeDislay(t.start_dateOfTag)}
                       </time>
                     </p>
 
@@ -81,7 +111,7 @@ return (
                   <p className="text-md text-green-500 font-semibold dark:text-green-500">
                       <time pubdate dateTime="2022-02-08" title="February 8th, 2022">
                         {" "}
-                        End Date: {t.end_dateOfTag}
+                        End Date: {formatDateTimeDislay(t.end_dateOfTag)}
                       </time>
                     </p>
             
@@ -90,7 +120,7 @@ return (
                   <p className="text-md text-green-500 font-semibold dark:text-green-500">
                       <time pubdate dateTime="2022-02-08" title="February 8th, 2022">
                         {" "}
-                        End Date for Discussion: {t.end_dateOfIdea}
+                        End Date for Discussion: {formatDateTimeDislay(t.end_dateOfIdea)}
                       </time>
                     </p>
              

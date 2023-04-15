@@ -8,8 +8,13 @@ import {
 import NavbarSidebarLayout from "../layout/NavBar-SideBar";
 import { createCommentOfIdea, deleteOneIdea, getCommentsOfIdea, getOneIdea, deleteOneComment, postEmotionOfIdeaIdByUserId, deleteEmotion, getEmotionByUserIdIdeaId, downloadFile } from '../api/apiService';
 import { useParams, Link } from "react-router-dom";
+import { decodeJwt } from '../api/jwtDecode';
+import femaleavatarImg from "../assets/img/femaleavatar.jpg"
+import maleavatarImg from "../assets/img/maleavatar.jpg"
+
 
 export default function ViewIdea() {
+  const today = new Date();
   const { id } = useParams();
   const replyContentRef = useRef();
 
@@ -21,6 +26,7 @@ export default function ViewIdea() {
 
    const [likeCount, setLikeCount] = useState(0);
     const [dislikeCount, setDislikeCount] = useState(0);
+
 
 
 
@@ -45,15 +51,15 @@ export default function ViewIdea() {
 
     useEffect(() => {
       if(idea) {
-        setLikeCount(idea.like);
-        setDislikeCount(idea.dislike);
+        setLikeCount(idea.idea.like);
+        setDislikeCount(idea.idea.dislike);
       }
     }, [idea]);
 
     useEffect(() => {
       if(idea) {
         try {
-          getEmotionByUserIdIdeaId(id, "6436847c931cfa456a37aafb")
+          getEmotionByUserIdIdeaId(id, decodeJwt().userId)
           .then(res => {
             console.log(res.data.isLike)
             if (res.data.isLike === true) {
@@ -106,7 +112,7 @@ export default function ViewIdea() {
         setIsLiked(false);
         setIsDisliked(false);
         
-        const resLikeCount = await deleteEmotion(id, "6436847c931cfa456a37aafb");
+        const resLikeCount = await deleteEmotion(id, decodeJwt().userId);
         setLikeCount(resLikeCount.data.like);
         setDislikeCount(resLikeCount.data.dislike);
         
@@ -115,7 +121,7 @@ export default function ViewIdea() {
         setIsLiked(true);
         setIsDisliked(false);
       
-        const resLikeCount = await postEmotionOfIdeaIdByUserId(id, "6436847c931cfa456a37aafb", true);
+        const resLikeCount = await postEmotionOfIdeaIdByUserId(id, decodeJwt().userId, true);
         
         setLikeCount(resLikeCount.data.like);
         setDislikeCount(resLikeCount.data.dislike);
@@ -131,7 +137,7 @@ export default function ViewIdea() {
         setIsDisliked(false);
         setIsLiked(false);
         
-        const resDisLikeCount = await deleteEmotion(id, "6436847c931cfa456a37aafb");
+        const resDisLikeCount = await deleteEmotion(id, decodeJwt().userId);
         
         setDislikeCount(resDisLikeCount.data.dislike);
         setLikeCount(resDisLikeCount.data.like);
@@ -141,13 +147,10 @@ export default function ViewIdea() {
         setIsDisliked(true);
         setIsLiked(false);
         
-        const resDisLikeCount = await postEmotionOfIdeaIdByUserId(id, "6436847c931cfa456a37aafb", false);
+        const resDisLikeCount = await postEmotionOfIdeaIdByUserId(id, decodeJwt().userId, false);
         setDislikeCount(resDisLikeCount.data.dislike);
         setLikeCount(resDisLikeCount.data.like);
       }
-       
-       
-        
     };
 
     const handleRemoveIdea = async () => {
@@ -188,9 +191,10 @@ export default function ViewIdea() {
 
     const handleSubmit = async (event) => {
       event.preventDefault();
-      const userId = "6436847c931cfa456a37aafb";
+      const userId = decodeJwt().userId;
       const comment = replyContentRef.current.value;
       let isAnonymity = isGlobal ? false : true;
+
 
       const formCommentData = new FormData();
       formCommentData.append('user_id', userId);
@@ -211,7 +215,6 @@ export default function ViewIdea() {
       await downloadFile(fileId);
     };
 
-
 return (
     <NavbarSidebarLayout>
       <div className="relative w-full h-full">
@@ -225,54 +228,57 @@ return (
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center">
                          {/* Avatar user */}
+
                       <p className="inline-flex items-center mr-3 text-md font-semibold text-gray-900 dark:text-white">
-                        <img
-                          className="w-8 h-8 mr-2 rounded-full"
-                          src="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-                          alt="Jese avatar"
-                        />
-                        {idea.user_name}
+                        <img className="w-8 h-8 mr-2 rounded-full" 
+                        src={idea.idea.user_id.gender === "Female" ? femaleavatarImg : maleavatarImg} alt="avatar" />
+                        {idea.isAnonymity ? "Anonymity User" : idea.idea.user_id.fullname}
                       </p>
                       {/* Created At */}
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         <time pubdate dateTime="2022-02-08" title="February 8th, 2022">
                           {" "}
-                          {idea.createdAt}
+                          {formatDateTimeDislay(idea.idea.createdAt)}
                         </time>
                       </p>
                     </div>
 
-                    <button id="dropdownComment4Button" aria-expanded="false" data-dropdown-toggle="dropdownComment4" class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-gray-600" type="button">
-                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path>
-                        </svg>
-                        <span class="sr-only">Idea settings</span>
-                    </button>
+                    {idea.idea.user_id._id === decodeJwt().userId && (
+                      <>
+                        <button id="dropdownComment4Button" aria-expanded="false" data-dropdown-toggle="dropdownComment4" class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-gray-600" type="button">
+                            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path>
+                            </svg>
+                            <span class="sr-only">Idea settings</span>
+                        </button>
 
-                    <div id="dropdownComment4" class="z-10 hidden bg-white divide-y divide-gray-100 rounded shadow w-30 dark:bg-gray-700 dark:divide-gray-600 block" style={{position: 'absolute', inset: 'auto auto 0px 0px', margin: '0px', transform: 'translate3d(834px, -3987.5px, 0px)'}} data-popper-placement="top" data-popper-reference-hidden="" data-popper-escaped="">
-                        <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconHorizontalButton">
-                            <li>
-                                <Link to={`/editIdea/${id}`} class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</Link>
-                            </li>
-                            <li>
-                                <a href="#" onClick={handleRemoveIdea} class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Remove</a>
-                            </li>
-                        </ul>
-                    </div>
+                        <div id="dropdownComment4" class="z-10 hidden bg-white divide-y divide-gray-100 rounded shadow w-30 dark:bg-gray-700 dark:divide-gray-600 block" style={{position: 'absolute', inset: 'auto auto 0px 0px', margin: '0px', transform: 'translate3d(834px, -3987.5px, 0px)'}} data-popper-placement="top" data-popper-reference-hidden="" data-popper-escaped="">
+                            <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconHorizontalButton">
+                                <li>
+                                    <Link to={`/editIdea/${id}`} class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</Link>
+                                </li>
+                                <li>
+                                    <a href="#" onClick={handleRemoveIdea} class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Remove</a>
+                                </li>
+                            </ul>
+                        </div>
+                      </>
+                    )}
+                    
                   </div>
 
                   {/* Subject tag/ tag name */}
                   <div className="flex items-center justify-start flex-1 text-md text-green-500 font-semibold dark:text-green-500">
-                    <HiHashtag size='1.3rem'/> {idea.tag_name}
+                    <HiHashtag size='1.3rem'/> {idea.idea.tag_id.subject}
                   </div>
 
                   {/* Title of idea */}
-                  <p className="mb-3 text-gray-900 font-semibold dark:text-white">{idea.title}</p>
+                  <p className="mb-3 text-gray-900 font-semibold dark:text-white">{idea.idea.title}</p>
 
 
                   {/* content */}
                   <p className="mb-2 text-gray-900 dark:text-white text-justify">
-                    {idea.content}
+                    {idea.idea.content}
                   </p>
                   <p className="mb-3 text-gray-900 dark:text-white">Looking forward to it! Thanks.</p>
 
@@ -347,14 +353,13 @@ return (
                     <article className="pl-12 mb-5 my-1">
                     <footer className="flex items-center justify-between mb-2">
                       <div className="flex items-center">
-                        <p className="inline-flex items-center mr-3 text-sm font-semibold text-gray-900 dark:text-white">
-                          <img
-                            className="w-6 h-6 mr-2 rounded-full"
-                            src="https://flowbite.com/docs/images/people/profile-picture-1.jpg"
-                            alt="Joseph avatar"
-                          />
-                          {cmt.user_id.fullname}
+                        
+                        <p className="inline-flex items-center mr-3 text-md font-semibold text-gray-900 dark:text-white">
+                          <img className="w-8 h-8 mr-2 rounded-full" 
+                          src={cmt.user_id.gender === "Female" ? femaleavatarImg : maleavatarImg} alt="avatar" />
+                          {cmt.isAnonymity ? "Anonymity User" : cmt.user_id.fullname}
                         </p>
+
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           <time pubdate dateTime="2022-02-08" title="February 8th, 2022">
                             {" "}
@@ -365,20 +370,25 @@ return (
 
                       {/* Neu cmt do la cua minh thi cho nhan xoa */}
 
-                      <button id="dropdownComment5Button" aria-expanded="false" data-dropdown-toggle="dropdownComment5" class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-gray-600" type="button">
-                          <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path>
-                          </svg>
-                          <span class="sr-only">Comment settings</span>
-                      </button>
+                      {cmt.user_id._id == decodeJwt().userId && (
+                        <>
+                          <button  data-dropdown-toggle="dropdownComment5" class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-gray-600" type="button">
+                              <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path>
+                              </svg>
+                              <span class="sr-only">Comment settings</span>
+                          </button>
 
-                      <div id="dropdownComment5" class="z-10 hidden bg-white divide-y divide-gray-100 rounded shadow w-30 dark:bg-gray-700 dark:divide-gray-600 block" style={{position: 'absolute', inset: 'auto auto 0px 0px', margin: '0px', transform: 'translate3d(834px, -3987.5px, 0px)'}} data-popper-placement="top" data-popper-reference-hidden="" data-popper-escaped="">
-                          <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconHorizontalButton">
-                              <li>
-                                  <a onClick={handleDeleteCommentClick.bind(null, cmt._id)} class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Remove</a>
-                              </li>
-                          </ul>
-                      </div>
+                          <div id="dropdownComment5" class="z-10 bg-white divide-y divide-gray-100 rounded shadow w-30 dark:bg-gray-700 dark:divide-gray-600 block" style={{position: 'absolute', inset: 'auto auto 0px 0px', margin: '0px', transform: 'translate3d(834px, -3987.5px, 0px)'}} data-popper-placement="top" data-popper-reference-hidden="" data-popper-escaped="">
+                              <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconHorizontalButton">
+                                  <li>
+                                      <a onClick={handleDeleteCommentClick.bind(null, cmt._id)} class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Remove</a>
+                                  </li>
+                              </ul>
+                          </div>
+                       </>
+                      )}
+                      
 
                     </footer>
 
@@ -394,9 +404,11 @@ return (
 
                 )) : ""}
 
-
+  
                 {/* Your comment */}
-                <label htmlFor="chat" className="sr-only">
+                {(today>new Date(idea.idea.tag_id.end_dateOfIdea)) ? "" : (
+                  <>
+                  <label htmlFor="chat" className="sr-only">
                   Your message
                 </label>
                     <form onSubmit={handleSubmit} className="flex items-center mb-5">
@@ -427,6 +439,9 @@ return (
                         <span className="sr-only">Send message</span>
                       </button>
                     </form>
+                  </>
+                )}
+                
                    
                     
 

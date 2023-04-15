@@ -1,4 +1,11 @@
 import axios from "axios";
+  
+const config = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `${localStorage.getItem("token")}`
+    },
+  }
 
 export const login = async (email, password) => {
     try {
@@ -13,9 +20,10 @@ export const login = async (email, password) => {
       throw new Error("Login failed");
     }
   };
+
   
 export const getIdeas = async () => {
-    return await axios.get("http://localhost:8080/ideas")
+    return await axios.get("http://localhost:8080/ideas", config)
       .then(res => {
           return res;
       })
@@ -25,7 +33,7 @@ export const getIdeas = async () => {
   }
 
   export const getOneIdea = async (id) => {
-    return await axios.get(`http://localhost:8080/ideas/${id}`)
+    return await axios.get(`http://localhost:8080/ideas/${id}`, config)
       .then(res => {
           return res;
       })
@@ -35,7 +43,7 @@ export const getIdeas = async () => {
   }
 
   export const updateViewTime = async (id) => {
-    return await axios.put(`http://localhost:8080/ideas/updateViewTime/${id}`)
+    return await axios.put(`http://localhost:8080/ideas/updateViewTime/${id}`, config)
       .then(res => {
           return res;
       })
@@ -45,7 +53,7 @@ export const getIdeas = async () => {
   }
 
   export const deleteOneIdea = async (id) => {
-    return await axios.delete(`http://localhost:8080/ideas/${id}`)
+    return await axios.delete(`http://localhost:8080/ideas/${id}`, config)
       .then(res => {
           return res;
       })
@@ -55,7 +63,7 @@ export const getIdeas = async () => {
   }
 
 export const createIdea = async (formData) => {
-    return await axios.post("http://localhost:8080/ideas", formData, 
+    return await axios.post("http://localhost:8080/ideas", config, formData, 
         {headers: {
         'Content-Type': 'multipart/form-data',
       },})
@@ -81,7 +89,7 @@ export const editIdea = async (id, formData) => {
 }
 
 export const getMostPopularIdeas = async () => {
-    return await axios.get("http://localhost:8080/ideas/getMostPopularIdeas")
+    return await axios.get("http://localhost:8080/ideas/getMostPopularIdeas", config)
       .then(res => {
           return res;
       })
@@ -91,7 +99,7 @@ export const getMostPopularIdeas = async () => {
   }
 
   export const getMostViewIdeas = async () => {
-    return await axios.get("http://localhost:8080/ideas/getMostViewIdeas")
+    return await axios.get("http://localhost:8080/ideas/getMostViewIdeas", config)
       .then(res => {
           return res;
       })
@@ -101,7 +109,7 @@ export const getMostPopularIdeas = async () => {
   }
 
   export const getLastIdeas = async () => {
-    return await axios.get("http://localhost:8080/ideas/getLastIdeas")
+    return await axios.get("http://localhost:8080/ideas/getLastIdeas", config)
       .then(res => {
           return res;
       })
@@ -111,7 +119,7 @@ export const getMostPopularIdeas = async () => {
   }
 
   export const getTags = async () => {
-    return await axios.get("http://localhost:8080/tags")
+    return await axios.get("http://localhost:8080/tags", config)
       .then(res => {
           return res;
       })
@@ -121,7 +129,7 @@ export const getMostPopularIdeas = async () => {
   }
 
   export const getOneTag = async (id) => {
-    return await axios.get(`http://localhost:8080/tags/${id}`)
+    return await axios.get(`http://localhost:8080/tags/${id}`, config)
       .then(res => {
           return res;
       })
@@ -131,7 +139,7 @@ export const getMostPopularIdeas = async () => {
   }
 
   export const getIdeasByUserId = async (id) => {
-    return await axios.get(`http://localhost:8080/ideas/profile/${id}`)
+    return await axios.get(`http://localhost:8080/ideas/profile/${id}`, config)
       .then(res => {
           return res;
       })
@@ -141,7 +149,7 @@ export const getMostPopularIdeas = async () => {
   }
 
   export const getCommentsOfIdea = async (id) => {
-    return await axios.get(`http://localhost:8080/comments/${id}`)
+    return await axios.get(`http://localhost:8080/comments/${id}`, config)
       .then(res => {
           return res;
       })
@@ -167,7 +175,7 @@ export const getMostPopularIdeas = async () => {
 
 
 export const deleteOneComment = async (cmtId) => {
-    return await axios.delete(`http://localhost:8080/comments/${cmtId}`)
+    return await axios.delete(`http://localhost:8080/comments/${cmtId}`, config)
       .then(res => {
           return res;
       })
@@ -178,7 +186,7 @@ export const deleteOneComment = async (cmtId) => {
 
 
   export const getNotificationsOfUser = async (userId) => {
-    return await axios.get(`http://localhost:8080/notifications/${userId}`)
+    return await axios.get(`http://localhost:8080/notifications/${userId}`, config)
       .then(res => {
           return res;
       })
@@ -235,4 +243,99 @@ export const deleteOneComment = async (cmtId) => {
       })
   }
   
+  export const getOneUser = async (userId) => {
+    return await axios.get(`http://localhost:8080/users/${userId}`, config)
+      .then(res => {
+          return res;
+      })
+      .catch(err => {
+          console.log(err)
+      })
+  }
   
+  export const getUserInfoById = async (userId) => {
+    return await axios.get(`http://localhost:8080/users/${userId}`, config)
+      .then(res => {
+          return res;
+      })
+      .catch(err => {
+          console.log(err)
+      })
+  }
+
+  export const postNotification = async (userId, otherUserId, ideaId, type) => {
+    return await axios.post(`http://localhost:8080/notifications/${ideaId}`, {
+     
+            userId: userId,
+            otherUserId: otherUserId,
+            type: type,
+        
+    })
+      .then(res => {
+          return res;
+      })
+      .catch(err => {
+          console.log(err)
+      })
+  }
+
+ export const getUsers = async () => {
+    return await axios.get("http://localhost:8080/users", config)
+      .then(res => {
+      
+          return res;
+      })
+      .catch(err => {
+          console.log(err)
+      })
+  }
+
+  export const getUsersByDepartment = async (department) => {
+    return await axios.get(`http://localhost:8080/users/users/${department}`, config)
+      .then(res => {
+          return res;
+      })
+      .catch(err => {
+          console.log(err)
+      })
+  }
+
+  export const getTotalUsersOfDepartment = async (department) => {
+    return await axios.get(`http://localhost:8080/users/getalluser/${department}`, config)
+      .then(res => {
+          return res;
+      })
+      .catch(err => {
+          console.log(err)
+      })
+  }
+
+  export const getTotalIdeasOfDepartment = async (department) => {
+    return await axios.get(`http://localhost:8080/users/idea/${department}`, config)
+      .then(res => {
+          return res;
+      })
+      .catch(err => {
+          console.log(err)
+      })
+  }
+
+  export const getTotalIdeasTodayOfDepartment = async (department) => {
+    return await axios.get(`http://localhost:8080/users/totaluser/${department}`, config)
+      .then(res => {
+          return res;
+      })
+      .catch(err => {
+          console.log(err)
+      })
+  }
+
+  export const getIdeasByTagId = async (tagId) => {
+    return await axios.get(`http://localhost:8080/ideas/ideasByTag/${tagId}`, config)
+      .then(res => {
+          return res;
+      })
+      .catch(err => {
+          console.log(err)
+      })
+  }

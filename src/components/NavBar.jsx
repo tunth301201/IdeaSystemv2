@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from "react";
 import SideBar from "./SideBar.jsx";
-import { getNotificationsOfUser } from "../api/apiService.js";
+import { getNotificationsOfUser, getOneUser } from "../api/apiService.js";
+import { decodeJwt } from "../api/jwtDecode.js";
+import femaleavatarImg from "../assets/img/femaleavatar.jpg"
+import maleavatarImg from "../assets/img/maleavatar.jpg"
+import { Link } from "react-router-dom";
 
 
 export default function NavBar() {
     const [isSideBarOpen, setIsSideBarOpen] = React.useState(false);
     let [isOpenNotification, setIsOpenNotification] = React.useState(false);
     let [isOpenAccount, setIsOpenAccount] = React.useState(false);
+     const [userInfo, setUserInfo] = useState(null);
+     useEffect(() => {
+        getOneUser(decodeJwt().userId).then(res => {
+            setUserInfo(res.data)
+        })
+    }, []);
 
     const handleOpenNotification = () => {
         setIsOpenNotification(!isOpenNotification);
@@ -28,7 +38,7 @@ export default function NavBar() {
       }
 
 
-    const userId = "6436847c931cfa456a37aafb";
+    const userId = decodeJwt().userId;
     const [notifications, setNotifications] =useState([]);
     useEffect(() => {
         getNotificationsOfUser(userId).then(res => {
@@ -78,7 +88,7 @@ export default function NavBar() {
 
                 {/* Notification button */}
                 <button type="button" onClick={handleOpenNotification} className="p-2 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700">
-                    <span className="absolute top-5 right-16 inline-flex items-center justify-center px-1.5 py-1 mr-2 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">1</span>
+                    <span className="absolute top-5 right-16 inline-flex items-center justify-center px-1.5 py-1 mr-2 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full"></span>
                     <span className="sr-only">View notifications</span>
                     <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" /></svg>
                    
@@ -94,7 +104,7 @@ export default function NavBar() {
                         noti.type === "Comment" ? (
                             <a href="#" className="flex px-4 py-3 border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-600">
                                 <div className="flex-shrink-0">
-                                <img className="rounded-full w-11 h-11" src="https://flowbite-admin-dashboard.vercel.app/images/users/leslie-livingston.png" alt="Leslie image" />
+                                <img className="rounded-full w-11 h-11" src={noti.other_user_id.gender === "Female" ? femaleavatarImg : maleavatarImg} alt="image" />
                                 <div className="relative flex items-center justify-center w-5 h-5 ml-6 -mt-5 bg-green-400 border border-white rounded-full dark:border-gray-700">
                                     <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clipRule="evenodd" /></svg>
                                 </div>
@@ -105,9 +115,9 @@ export default function NavBar() {
                                 </div>
                             </a>
                         ) : (
-                            <a href="#" className="flex px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-600">
+                            <Link to={`/viewIdea/${noti.idea_id._id}`} className="flex px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-600">
                             <div className="flex-shrink-0">
-                            <img className="rounded-full w-11 h-11" src="https://flowbite-admin-dashboard.vercel.app/images/users/robert-brown.png" alt="Robert image" />
+                            <img className="rounded-full w-11 h-11" src={noti.other_user_id.gender === "Female" ? femaleavatarImg : maleavatarImg} alt="Robert image" />
                             <div className="relative flex items-center justify-center w-5 h-5 ml-6 -mt-5 bg-purple-500 border border-white rounded-full dark:border-gray-700">
                                 <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" /></svg>
                             </div>
@@ -116,7 +126,7 @@ export default function NavBar() {
                             <div className="text-gray-500 font-normal text-sm mb-1.5 dark:text-gray-400"><span className="font-semibold text-gray-900 dark:text-white">{noti.other_user_id.fullname}</span> posted a new idea.</div>
                             <div className="text-xs font-medium text-primary-700 dark:text-primary-400">{formatDateTimeDislay(noti.createdAt)}</div>
                             </div>
-                            </a>
+                            </Link>
                         )
                         
                     )): ""}
@@ -126,38 +136,41 @@ export default function NavBar() {
                 </div>
 
 
+                {userInfo ? (
                     <div className="flex items-center ml-3">
-                        
-                        {/* Icon Account User */}
-                        <div>
-                            <button type="button" onClick={handleOpenAccount} className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600">
-                                <span className="sr-only">Open user menu</span>
-                                <img className="w-8 h-8 rounded-full" src="https://flowbite.com/docs/images/people/profile-picture-5.jpg" alt="" />
-                            </button>
-                        </div>
-
-                        <div className={isOpenAccount ? "z-20 max-w-sm my-1 overflow-hidden text-base list-none bg-white divide-y divide-gray-100 rounded shadow-lg dark:divide-gray-600 dark:bg-gray-700" : "z-20 hidden max-w-sm my-1 overflow-hidden text-base list-none bg-white divide-y divide-gray-100 rounded shadow-lg dark:divide-gray-600 dark:bg-gray-700"} style={{position: "fixed", top: "50px", right: "20px"}}>
-                            <div className="px-4 py-3" role="none">
-                                <p className="text-sm text-gray-900 dark:text-white" role="none">
-                                Full name
-                                </p>
-                                <p className="text-sm font-medium text-gray-900 truncate dark:text-gray-300" role="none">
-                                abhscsjcns@gmail.com
-                                </p>
-                                <p className="text-sm text-gray-900 dark:text-white" role="none">
-                                Department: A
-                                </p>
-                                <p className="text-sm text-gray-900 dark:text-white" role="none">
-                                Role: Staff
-                                </p>
-                            </div>
-                            <ul className="py-1" role="none">
-                                <li>
-                                <a href="/" onClick={logout} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Sign out</a>
-                                </li>
-                            </ul>
-                        </div>
+                                        
+                    {/* Icon Account User */}
+                    <div>
+                        <button type="button" onClick={handleOpenAccount} className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600">
+                            <span className="sr-only">Open user menu</span>
+                            <img className="w-8 h-8 rounded-full" src={userInfo.gender === "Female" ? femaleavatarImg : maleavatarImg} alt="" />
+                        </button>
                     </div>
+
+                    <div className={isOpenAccount ? "z-20 max-w-sm my-1 overflow-hidden text-base list-none bg-white divide-y divide-gray-100 rounded shadow-lg dark:divide-gray-600 dark:bg-gray-700" : "z-20 hidden max-w-sm my-1 overflow-hidden text-base list-none bg-white divide-y divide-gray-100 rounded shadow-lg dark:divide-gray-600 dark:bg-gray-700"} style={{position: "fixed", top: "50px", right: "20px"}}>
+                        <div className="px-4 py-3" role="none">
+                            <p className="text-sm text-gray-900 dark:text-white" role="none">
+                            {userInfo.fullname}
+                            </p>
+                            <p className="text-sm font-medium text-gray-900 truncate dark:text-gray-300" role="none">
+                            {userInfo.email}
+                            </p>
+                            <p className="text-sm text-gray-900 dark:text-white" role="none">
+                            Department: {userInfo.department}
+                            </p>
+                            <p className="text-sm text-gray-900 dark:text-white" role="none">
+                            Role: {userInfo.permission}
+                            </p>
+                        </div>
+                        <ul className="py-1" role="none">
+                            <li>
+                            <a href="/" onClick={logout} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white" role="menuitem">Sign out</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                ) : ""}
+                    
                     </div>
                 </div>
             </div>
