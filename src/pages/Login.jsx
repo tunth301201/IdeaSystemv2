@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import loginImg from "../assets/img/login.jpg";
 import { login } from "../api/apiService";  
 import { decodeJwt } from "../api/jwtDecode";
+import jwtDecode from 'jwt-decode';
 
 
 const Login = () => {
@@ -18,10 +19,10 @@ const Login = () => {
       const permission = decodeJwt().permission;
       console.log("permission: " + permission)
     
-      if (permission === "QA Manager") {
-        window.location.href = '/admin';
+      if (permission === "QAManager") {
+        window.location.href = "http://localhost:4000/?token=" + token;
       } else {
-        window.location.href = '/home';
+        // window.location.href = '/home';
       }
     }
   }, []);
@@ -40,6 +41,7 @@ const Login = () => {
       const response = await login(email, password);
       
       const token = response.token;
+      
       localStorage.setItem("token", token);
       setIsLoggedIn(true);
 
@@ -48,7 +50,7 @@ const Login = () => {
       const permission = decodeJwt().permission;
       console.log("permission: " + permission)
     
-      if (permission === "QA Manager") {
+      if (permission === "QAManager") {
         window.location.href = '/admin';
       } else {
         window.location.href = '/home';
