@@ -4,6 +4,7 @@ import { getNotificationsOfUser, getOneUser } from "../api/apiService.js";
 import { decodeJwt } from "../api/jwtDecode.js";
 import femaleavatarImg from "../assets/img/femaleavatar.jpg"
 import maleavatarImg from "../assets/img/maleavatar.jpg"
+import logoideasystem from "../assets/img/logoideasystem.png"
 import { Link } from "react-router-dom";
 
 
@@ -79,9 +80,8 @@ export default function NavBar() {
                             </svg>
                             <SideBar isSideBarOpen={isSideBarOpen} />
                         </button>
-                        <a href="https://flowbite.com" className="flex ml-2 md:mr-24">
-                        <img src="https://flowbite.com/docs/images/logo.svg" className="h-8 mr-3" alt="" />
-                        <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">Flowbite</span>
+                        <a href="#" className="flex ml-2 md:mr-24">
+                        <img src={logoideasystem} className="h-10 mr-3" alt="" />
                         </a>
                     </div>
                 <div className="flex items-center">

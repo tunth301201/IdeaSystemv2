@@ -80,8 +80,12 @@ export default function ViewIdea() {
       }
     }, [idea]);
 
+    let [isOpenIdeaSetting, setIsOpenIdeaSetting] = React.useState(false);
 
-  
+
+    const handleOpenIdeaSetting = () => {
+      setIsOpenIdeaSetting(!isOpenIdeaSetting);
+  };
 
 
     const fetchComment = async () => {
@@ -245,20 +249,20 @@ return (
 
                     {idea.idea.user_id._id === decodeJwt().userId && (
                       <>
-                        <button id="dropdownComment4Button" aria-expanded="false" data-dropdown-toggle="dropdownComment4" class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-gray-600" type="button">
-                            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <button onClick={handleOpenIdeaSetting} class="inline-flex items-center p-2 text-sm font-medium text-center text-gray-500 bg-white rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-gray-300 dark:focus:ring-gray-600" type="button">
+                            <svg className="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path>
                             </svg>
-                            <span class="sr-only">Idea settings</span>
+                            <span className="sr-only">Idea settings</span>
                         </button>
 
-                        <div id="dropdownComment4" class="z-10 hidden bg-white divide-y divide-gray-100 rounded shadow w-30 dark:bg-gray-700 dark:divide-gray-600 block" style={{position: 'absolute', inset: 'auto auto 0px 0px', margin: '0px', transform: 'translate3d(834px, -3987.5px, 0px)'}} data-popper-placement="top" data-popper-reference-hidden="" data-popper-escaped="">
-                            <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconHorizontalButton">
+                        <div className={isOpenIdeaSetting ? "z-10  bg-white divide-y divide-gray-100 rounded shadow w-30 dark:bg-gray-700 dark:divide-gray-600 block" :  "z-10 hidden  bg-white divide-y divide-gray-100 rounded shadow w-30 dark:bg-gray-700 dark:divide-gray-600 block"} style={{position: 'fixed', top: "120px", right: "60px" }} data-popper-placement="top" >
+                            <ul className="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownMenuIconHorizontalButton">
                                 <li>
-                                    <Link to={`/editIdea/${id}`} class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</Link>
+                                    <Link to={`/editIdea/${id}`} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</Link>
                                 </li>
                                 <li>
-                                    <a href="#" onClick={handleRemoveIdea} class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Remove</a>
+                                    <a href="#" onClick={handleRemoveIdea} className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Remove</a>
                                 </li>
                             </ul>
                         </div>
